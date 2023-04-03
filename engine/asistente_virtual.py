@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 import requests                 #Va a una página web a buscar información en formato html
 import random
 import subprocess as sub
+import sys
 
 '''
 Todos los pedidos deben iniciar con el nombre del asistente (actualmente se llama "Okey")
@@ -86,7 +87,7 @@ engine.setProperty('rate', 160)             #velocidad del asistente
 ############### Código antiguo, pero lo dejo por si sirve
 #engine.setProperty('voice', voices[0].id)  #Cambiar el número para poner otra voz
 #for i in voices:                           #Para ver las voces disponibles
-#    print(i)
+#    print_(i)
 ###############
 k                 = [0]   #A esta lista se le agrega un elemento cada vez que comenzamos a grabar
 mixer_stop_       = [999] #Coloco un número muy grande apropósito para asegurarme que no sea superado por len(k)
@@ -106,18 +107,18 @@ def reconocer_voz_y_pasarlo_a_texto(i = 0):
             if (len(k) - mixer_stop_[-1]) > 20: mixer.music.stop()         #Apaga todos los archivos de audio después de 20 grabaciones (sólo influye en los archivos abiertos por el asistente)
             if chequear_temporizador(fin_tiempo_pedido[-1]) == True: return None #Chequea si llegó el momento de acatar el pedido que le dijimos que haga en X minutos (con las palabras clave '... en X minutos'). Si el pedido programado se ejecutó, entonces la función devuelve None                   
             ##########
-            print(f'\n{len(k)-1}) Escuchando...')                          #Imprime esto para que sepamos que está escuchando (aunque realmente todavía no está escuchando)
+            print_(f'\n{len(k)-1}) Escuchando...')                          #Imprime esto para que sepamos que está escuchando (aunque realmente todavía no está escuchando)
             voice = listener.listen(source, 10)  #Acá comienza a escuchar. Tiene una tolerancia de 10 segundos de no escuchar nada, creo. Sirve para tratar de evitar que la grabación se trabe por estar encendida tanto tiempo
-            print('Procesando...')
+            print_('Procesando...')
             rec = listener.recognize_google(voice, language = 'es-AR').lower() #Acá se almacena lo que se grabó. Le pido que reconozca mi voz con google en el idioma español argentino. El lower cambia mayúsculas por minúsculas. Da error cuando Python no escucha nada             
     except sr.RequestError:
         if i < 3:                                                          #Si hay un fallo de conexión, intenta tres veces arrancar el programa. Si a la número tres no vuelve la conexión, se cierra. (Hay 10 segundos entre cada intento)
-            print('Fallo de conexión, reintentando...')
+            print_('Fallo de conexión, reintentando...')
             time.sleep(10)
             rec = reconocer_voz_y_pasarlo_a_texto(i = i + 1)
         else: print_and_talk('Fallo de conexión a internet. Cerrando')
     except:
-        print('No se escuchó nada. Reintentando..')
+        print_('No se escuchó nada. Reintentando..')
         rec = reconocer_voz_y_pasarlo_a_texto()
     return rec
 
@@ -134,7 +135,7 @@ def run():
     else:
         posicion_name = rec.find(name)                      #Busca la posición donde inicia el nombre del asistente
         rec = rec[posicion_name : len(rec)]                 #Recorta la grabación hasta el momento donde se dice el nombre
-        print(f'Dijiste: {rec}')                            #Te muestra lo que quedó de la grabación
+        print_(f'Dijiste: {rec}')                            #Te muestra lo que quedó de la grabación
         rec = rec.replace(name + ' ', '').replace(name, '') #Pedimos que reemplace el nombre del asistente por un espacio vacío       
         pedidos(rec)
 
@@ -306,8 +307,12 @@ def pedidos_genericos(rec, direccion, reintentos):        #Los "pedidos genéric
 ###################################################################
 
 ######## DEFINICIONES QUE DEPENDERÁN DE OTRAS QUE ESTÁN MÁS ABAJO 
-def print_and_talk(text): #Esta función hace que el reproductor lea el texto en el paréntesis, pero primero lo imprime                        
+def print_(text):
     print(text)
+    sys.stdout.flush() # Pongo esto para que se vacie el búfer de salida estándar después de cada print para que el evento message de JavaScript funcione en tiempo real
+
+def print_and_talk(text): #Esta función hace que el reproductor lea el texto en el paréntesis, pero primero lo imprime                        
+    print_(text)
     engine.say(text)  
     engine.runAndWait()
 
@@ -555,5 +560,7 @@ basta_ = []
 def iniciar_asistente(): #Nos aseguramos de que el asistente no deje de estar activo una vez que lo iniciamos, siempre y cuando la lista "basta_" esté vacía   
     while len(basta_) == 0: run() 
 
-if __name__ == '__main__': #Si este archivo de python se ejecuta acá (es decir, si no lo estamos ejecutando desde otro script), entonces iniciamos el asistente
-    iniciar_asistente()
+# if __name__ == '__main__': #Si este archivo de python se ejecuta acá (es decir, si no lo estamos ejecutando desde otro script), entonces iniciamos el asistente
+#     iniciar_asistente()
+
+iniciar_asistente()
