@@ -3,7 +3,7 @@ const get_asistente = () => {
     const path = require("path")
     
     const options = {
-        scriptPath: path.join(__dirname, "/../engine/"),
+        scriptPath: path.join(__dirname, "../python/"),
         pythonPath: 'C:/Users/Ricardo/AppData/Local/Programs/Python/Python311/python.exe'
     }
 
@@ -17,4 +17,6 @@ const get_asistente = () => {
         if (err) console.log(err);
         alert("Terminado :(")
     })
+
+    // asistente.terminate(); o asistente.kill('SIGINT'); Para hacer que el script se cierre //! mejor el terminate
 }
