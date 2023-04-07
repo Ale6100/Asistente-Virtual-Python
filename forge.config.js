@@ -1,5 +1,7 @@
 module.exports = {
-  packagerConfig: {},
+  packagerConfig: {
+    icon: './python/z_robot.ico'
+  },
   rebuildConfig: {},
   makers: [
     {
