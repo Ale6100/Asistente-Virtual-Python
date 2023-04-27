@@ -1,18 +1,18 @@
 # Asistente virtual en Python (no terminado)
 
-Bienvenido! este es mi primer asistente. Lo inicié en el 2020 y ahora planeo mejorarlo mucho gracias a Python y las nuevas tecnologías que aprendí con el paso del tiempo.
+Bienvenido! este es mi primer asistente con Python. Hace poco hice uno con JavaScript (https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
 
-Hace poco hice uno con JavaScript (https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
-
-Está hecho para ser utilizado en windows. Por ahora no está listo para que lo puedas usar, sin embargo puedes abrir el archivo "Asistente_virtual.exe" en la carpeta "dist" para ver el estado actual.
+Está hecho para ser utilizado en windows. Por ahora no está listo para que lo puedas usar, sin embargo puedes abrir el archivo "Asistente_virtual.exe" en la carpeta "dist/Asistente_virtual" para ver el estado actual.
 
 ## Activadores
 
-* Hay pedidos que tienen condiciones muy específicas para que funcionen bien. Se especifican en la tabla.
+* Todas los pedidos deben iniciar con el nombre del asistente. Por ahora se llama "Okay" por simplicidad.
 
 * Todas las palabras clave tienen variantes (por ejemplo en vez de decir "abre" se puede decir "abrís").
 
-* Todas los pedidos deben iniciar con el nombre del asistente. Por ahora se llama "Okay" por simplicidad.
+* Hay pedidos que tienen condiciones muy específicas para que funcionen bien. Se especifican en la siguiente tabla.
+
+* En general, los pedidos que están más arriba de esta tabla tienen mayor prioridadad que los de abajo.
 
 | Palabras clave | Descripción | Ejemplo | Condición
 | :--- | :--- | :--- | :--- |
@@ -37,8 +37,11 @@ Está hecho para ser utilizado en windows. Por ahora no está listo para que lo 
 | `cómo te llamás` | Te dice su nombre | Okay, ¿Cómo te llamás? | --- |
 | `tecla` X | Presiona la tecla solicitada | Okay, presioná la tecla T | --- |
 | `captura de pantalla` | Hace una captura de pantalla | Okay, sacá una captura de pantalla | Guarda la captura en la ubicación del programa |
-| `inicia` / `detené` el `cronómetro` | Inicia o detiene un cronómetro | Okay, iniciá el cronómetro | Se reinicia si apagás al asistente |
+| `iniciá` / `detené` el `cronómetro` | Inicia o detiene un cronómetro | Okay, iniciá el cronómetro | Se reinicia si apagás al asistente |
+| `alarma`... `en` n `minutos` | Programa una alarma para dentro de n minutos | Okay, activá la alarma en 5 minutos | --- |
+| `nivel de humor` | Consulta el porcentaje de "humor"| Okay, decime tu nivel de humor | --- |
+| `humor`...`X%` | Cambia el nivel de humor al n%, siendo n un número entero entre 0 y 100 | Okay, nivel de humor al 10% | --- |
 | `ayuda` | Te redirige a este readme para entender mejor al asistente | Okay, necesito ayuda | --- |
 | `ver código fuente` | Te redirige al código fuente del asistente | Okay, ver código fuente | --- |
 
-Tiene 3 activadores más pero solo están para aumentar la interactividad (`hola`, `gracias` y `okey`)
+Tiene 3 activadores más pero solo están para aumentar la interactividad (`okey` a secas, `hola` y `gracias`)
