@@ -1,52 +1,69 @@
 import tkinter as tk
-from asistente_virtual import iniciar
-import threading
-from queue import Queue
+from tkinter import messagebox
 import pkg_resources
 import webbrowser
 import scripts.direcciones_ as direcciones_
+import subprocess
+import threading
 
-def update_gui(q):
+ventana_abierta = True
+
+def leer_salida():
     while True:
-        msg = q.get()
-        
-        print(msg)
+        global proceso
+        output = proceso.stdout.readline()
+        if output == '' and proceso.poll() is not None:
+            break
+        if output:
+            msg = output.strip()
+            print(msg)
+            
+            if ventana_abierta is not True: break
+            
+            if "Detenido" in msg:
+                start_button.config(state=tk.NORMAL)
+                stop_button.config(state=tk.DISABLED)
+                label.config(text='Presiona en "iniciar"')
+            elif "Escuchando..." in msg:
+                label.config(text='Escuchando...')
+            elif 'Procesando...' in msg:
+                label.config(text='Espere...')
 
-        if msg == "Detenido":
+def iniciar():
+    start_button.config(state=tk.DISABLED)
+    stop_button.config(state=tk.NORMAL)
+    global proceso
+    proceso = subprocess.Popen(['pythonw', 'asistente_virtual.py', 'iniciado'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+    thread = threading.Thread(target=leer_salida)
+    thread.start()
+
+def detener():
+    if 'proceso' in globals():
+        global proceso
+        if proceso:
+            proceso.terminate()
             start_button.config(state=tk.NORMAL)
             stop_button.config(state=tk.DISABLED)
             label.config(text='Presiona en "iniciar"')
-        elif msg == "Encendido":
-            start_button.config(state=tk.DISABLED)
-            stop_button.config(state=tk.NORMAL)
-        elif msg == "Escuchando...":
-            label.config(text=f'{msg}')
-        elif msg == 'Espere...':
-            label.config(text=f'{msg}')
-
-def start_():
-    global stop_event
-    stop_event = threading.Event()
-    q = Queue()
-    t = threading.Thread(target=iniciar, args=(q, stop_event))
-    t.start()
-
-    t_gui = threading.Thread(target=update_gui, args=(q,))
-    t_gui.start()
-
-def stop_():
-    global stop_event
-    stop_event.set()
 
 root = tk.Tk()
 root.title("Asistente Virtual")
 root.geometry("275x100")
-root.iconbitmap(pkg_resources.resource_filename(__name__, 'complementos/z_robot.ico'))
+root.iconbitmap(pkg_resources.resource_filename(__name__, 'complementos/icon.ico'))
 
-start_button = tk.Button(root, text="Iniciar Asistente", command=start_)
+def cerrar():
+    global ventana_abierta
+    if messagebox.askokcancel("Cerrar", "¿Quieres cerrar el asistente?"):
+        detener()
+        root.destroy()
+        ventana_abierta = False
+
+root.protocol("WM_DELETE_WINDOW", cerrar)
+
+start_button = tk.Button(root, text="Iniciar Asistente", command=iniciar)
 start_button.pack()
 
-stop_button = tk.Button(root, text="Detener Asistente", command=stop_, state=tk.DISABLED)
+stop_button = tk.Button(root, text="Detener Asistente", command=detener, state=tk.DISABLED)
 stop_button.pack()
 
 open_button = tk.Button(root, text="Ayuda", command=lambda: webbrowser.open(f'{direcciones_.direcciones["ayuda"]["url"]}'))
