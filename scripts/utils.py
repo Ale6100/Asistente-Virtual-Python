@@ -42,7 +42,7 @@ def eliminar_frases_finales(rec: str) -> str:
 
 def buscar(rec: str) -> bool:
     if "en " not in rec: return False
-    frases_a_buscar = ['buscame', 'buscar', 'buscas', 'busca', 'buscarias', 'buscador']
+    frases_a_buscar = ['buscame', 'buscar', 'buscas', 'busca', 'buscarias']
     frases_a_buscar_ordenadas = sorted(frases_a_buscar, key=lambda x: len(x), reverse=True)
     
     rec = rec # Defino un rec local para no modificar al original por si esta función llega a retornar False
@@ -54,18 +54,20 @@ def buscar(rec: str) -> bool:
                 rec = rec[posicion_inicio_frase:]
                 break
     
-    rec = eliminar_frases_introductorias(rec, ['buscame', 'buscar', 'buscas', 'busca', 'a', 'al', 'buscarias', 'buscador'])
-    #! okay puedes buscar netflix en windows por favor sí dale haceme ese favor
+    rec = eliminar_frases_introductorias(rec, ['buscame', 'buscar', 'buscas', 'busca', 'a', 'al', 'buscarias'])
     
-    if "en windows" in rec:
-        indexPalClave = rec.find(f'en windows')
+    if 'en windows' in rec or 'en el buscador de windows' in rec: # En caso de que la búsqueda sea en el buscador de windows
+        if "en windows" in rec:
+            indexPalClave = rec.find(f'en windows')
+        else:
+            indexPalClave = rec.find(f'en el buscador de windows')
         rec = rec[:indexPalClave-1]
         pyautogui.hotkey('win', 's')
         time.sleep(2)
         pyautogui.typewrite(rec)
         time.sleep(1)
         pyautogui.hotkey('enter')
-        return True
+        return True 
     
     array_palClave = []
     for dir in direcciones: # Crea un array con todas las palabras clave del diccionario "direcciones"
@@ -73,15 +75,15 @@ def buscar(rec: str) -> bool:
             array_palClave.extend(direcciones[dir]['palClave'])
 
     sitio = ""
-    for palClave in array_palClave: # Elimina todas las "palClave" al final del pedido y "en" (a esta altura, si rec="Buscar oso en google", ahora rec="oso")
+    for palClave in array_palClave: # Elimina todas las "palClave" al final del pedido y "en" (después del for, si rec="Buscar oso en google", ahora rec="oso")
         if f'en {palClave.lower()}' in rec:
-            sitio = palClave
+            sitio = palClave # Si alguna palabra clave fue encontrada, la toma
             indexPalClave = rec.find(f'en {palClave.lower()}')
             rec = rec[:indexPalClave-1]
             break
-
-    if sitio == "": return False # Si ningún sitio fue solicitado en el pedido, se da por hecho que el usuario no quiere buscar nada y termina la función
     
+    if sitio == "": return False # Si ningún sitio fue solicitado en el pedido, se da por hecho que el usuario no quiere buscar nada y termina la función
+
     for dir in direcciones: # Crea un array con todas las palabras clave del diccionario "direcciones"
         if 'buscador' in direcciones[dir]:
             if sitio in direcciones[dir]['palClave']:
@@ -144,25 +146,28 @@ def abrir(rec: str, print_and_talk):
                 if "http" in direcciones[dir]['url']: # Si se intenta abrir un sitio web
                     webbrowser.open(f'{direcciones[dir]["url"]}')
                 elif direcciones[dir]['url'].startswith('C:'): # Si se intenta abrir un archivo local
-                    os.startfile(f'{direcciones[dir]["url"]}')
+                    if os.path.exists(f'{direcciones[dir]["url"]}'): os.startfile(f'{direcciones[dir]["url"]}')
                     
                     if sitio in ['canciones', 'musica']: # Si el archivo local es el archivo de audio reservado de música
-                        pyautogui.press('volumedown', 50)
-                        pyautogui.press('volumeup', 10)
+                        if os.path.exists(f'{direcciones[dir]["url"]}'):
+                            pyautogui.press('volumedown', 50), pyautogui.press('volumeup', 10)
+                        else:
+                            return print_and_talk(f'Error: debes colocar un archivo de audio para que yo pueda reproducirlo. Consulta el block de ayuda para más información')
+ 
                 else: # Si el archivo local es interno del asistente
                     os.startfile(pkg_resources.resource_filename(asistente_virtual_name, f'/{direcciones[dir]["url"]}'))
-                return print_and_talk("Hecho") 
+                return print_and_talk("Hecho")
     print_and_talk("El sitio no está registrado o no se entendió el pedido") 
 
 
 def volumen_al(rec, print_and_talk):
-    rec = rec.replace('%', '')
-    for i in range(100, -1, -1):
-        if str(i) in rec:
-            pyautogui.press('volumedown', 50)
-            pyautogui.press('volumeup', round(i/2))
-            print_and_talk(f'Volumen al {2*round(i/2)} por ciento') # Lo hago así sabiendo que el resultado siempre será par, ya que los botones mueven el valor de volumen de a pares
-            break
+    numero = obtener_numero(rec)
+    if numero < 0 or numero > 100:
+        print_and_talk('El volumen solicitado debe ser un número entero entre 0 y 100')
+    else:
+        pyautogui.press('volumedown', 50)
+        pyautogui.press('volumeup', round(numero/2))
+        print_and_talk(f'Volumen al {2*round(numero/2)} por ciento') # Lo hago así sabiendo que el resultado siempre será par, ya que los botones mueven el valor de volumen de a pares
 
 def cronometro(rec: str, cronometro: int, print_and_talk, humor:int):
     if 'inicia' in rec or 'comenza' in rec or 'comienza' in rec:
@@ -210,7 +215,7 @@ def deHumor(humor): # Agarra un número al azar y evalúa si se activa un coment
     if 100*random.random() < humor: return True
     return False
 
-def cambiar_humor(rec: str):
+def obtener_numero(rec: str):
     split = rec.split()
     numero = int([i for i in split if '%' in i][0][:-1].replace('.', ',').split(',')[0]) # Obtiene el número entero n de la cadena "bla bla bla n% bla bla"
     return numero

@@ -28,8 +28,11 @@ def leer_salida():
                 label.config(text='Escuchando...')
             elif 'Procesando...' in msg:
                 label.config(text='Espere...')
+            elif 'Internet no detectado. Reintentando...' in msg:
+                label.config(text='Internet no detectado. Reintentando...')
 
 def iniciar():
+    label.config(text='Iniciando. Espere...')
     start_button.config(state=tk.DISABLED)
     stop_button.config(state=tk.NORMAL)
     global proceso
@@ -60,10 +63,10 @@ def cerrar():
 
 root.protocol("WM_DELETE_WINDOW", cerrar)
 
-start_button = tk.Button(root, text="Iniciar Asistente", command=iniciar)
+start_button = tk.Button(root, text="Iniciar asistente", command=iniciar)
 start_button.pack()
 
-stop_button = tk.Button(root, text="Detener Asistente", command=detener, state=tk.DISABLED)
+stop_button = tk.Button(root, text="Detener asistente", command=detener, state=tk.DISABLED)
 stop_button.pack()
 
 open_button = tk.Button(root, text="Ayuda", command=lambda: webbrowser.open(f'{direcciones_.direcciones["ayuda"]["url"]}'))

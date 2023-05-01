@@ -39,7 +39,7 @@ engine.setProperty('voice', v_elegida)
 #! Configuramos los mensajes en la consola y la salida de audio
 def print_(text):
     print(text)
-    sys.stdout.flush()
+    sys.stdout.flush() # Pongo esto para que se vacíe el búfer de salida estándar después de cada print para que los prints se envíen al proceso padre (correspondiente al GUI.py) en tiempo real
 
 def print_and_talk(text: str): # El asistente imprime el texto pasado como argumento y lo reproduce
     print_(text)
@@ -64,8 +64,8 @@ def otro_intento():
     intentos += 1 
 
 #! Iniciamos al asistente
-def run(q=None):
-    rec = listen(q) # Retorna el pedido de un usuario
+def run():
+    rec = listen() # Retorna el pedido de un usuario
     if rec == f'-{name}-error-': return None # No trata de ejecutar ningún pedido si hubo algún error
     posicion_inicio_name = rec.find(f'{name}') # Busca la posición donde inicia el nombre del asistente
     rec = rec[posicion_inicio_name :] # Recorta la grabación hasta el momento donde se dice el nombre
@@ -73,26 +73,29 @@ def run(q=None):
     rec = rec[len(name)+1 :] # Recorta el nombre del asistente
     pedidos(rec)
 
-def listen(q=None) -> str: # Se llama a sí misma hasta que detecte que se llamó al asistente por su nombre
-    rec = reconocer_voz_y_pasarlo_a_texto(q)
+def listen() -> str: # Se llama a sí misma hasta que detecte que se llamó al asistente por su nombre
+    rec = reconocer_voz_y_pasarlo_a_texto()
     if name not in rec: rec = listen()
     return rec
 
-def reconocer_voz_y_pasarlo_a_texto(q=None) -> str: # Definimos la función que reconocerá la voz y la convertirá en texto
+def reconocer_voz_y_pasarlo_a_texto(fallos_conexion=0) -> str: # Definimos la función que reconocerá la voz y la convertirá en texto
     otro_intento()
     try:
         with sr.Microphone() as source: # Abrimos el micrófono como fuente de entrada de audio
             listener = sr.Recognizer()
             listener.adjust_for_ambient_noise(source, duration = 1) # Ajusta el nivel de ruido ambiental. Duration son los segundos que tarda en ajustar el ruido ambiental            
             print_(f'\n{intentos}) Escuchando...')
-            if q != None: q.put("Escuchando...")
             voice = listener.listen(source, timeout=10) # Acá comienza a escuchar. Tiene una tolerancia máxima de 10 segundos de no escuchar nada. Sirve para tratar de evitar que la grabación se trabe por estar encendida mucho tiempo
             print_('Procesando...')
-            if q != None: q.put("Espere...")
             return sr.Recognizer().recognize_google(voice, language = 'es', show_all=False).lower() # Acá se almacena lo que se grabó. Usa el servicio de Google para reconocer el habla en español argentino y lo convierte a minúsculas. Da error cuando no escucha nada             
-    except sr.RequestError: # Si hay un fallo de conexión se cierra
-        print_and_talk('Fallo de conexión a internet')
-        detener()
+    except sr.RequestError: # Si hay un fallo de conexión, intenta dos veces más arrancar el programa. Si a la número tres no vuelve la conexión, se cierra. (Hay 5 segundos entre cada intento)
+        if fallos_conexion <= 1:
+            print_('Internet no detectado. Reintentando...')
+            time.sleep(5)
+            return reconocer_voz_y_pasarlo_a_texto(fallos_conexion=fallos_conexion+1)
+        else:
+            print_and_talk('Fallo de conexión a internet')
+            detener()
     except sr.UnknownValueError:
         print_('No se escuchó nada. Reintentando...')
     except sr.WaitTimeoutError:
@@ -164,7 +167,7 @@ def pedidoGenerico(rec: str) -> bool:
         hora = datetime.now().strftime('%H:%M %p')
         print_and_talk(f'Son las {hora}')
         
-    elif 'fecha' in rec:
+    elif 'fecha' in rec or 'dia es hoy' in rec:
         fecha = datetime.now().strftime('%d/%m/%Y') # Fecha actual
         print_and_talk(f'Hoy es {fecha}')
     
@@ -195,6 +198,7 @@ def pedidoGenerico(rec: str) -> bool:
         
     elif 'minimiza' in rec: # Minimiza el programa actual
         pyautogui.hotkey('alt', 'space', hold='down')
+        time.sleep(0.1)
         pyautogui.press('n')
         print_and_talk('Hecho')
         
@@ -211,28 +215,25 @@ def pedidoGenerico(rec: str) -> bool:
     elif "tecla " in rec and len(rec.split())-1 >= rec.split().index('tecla')+1: # Si dice la palabra "tecla" en cualquier momento excepto en la palabra final, presiona la tecla pedida
         utils.apretar_tecla(rec, print_and_talk)    
     
-    elif any(word in rec for word in ['captura de pantalla', 'estoy viendo', 'capturar pantalla', 'capturar pantalla', 'captura la pantalla', 'screenshot']): # Saca una captura de pantalla
+    elif any(word in rec for word in ['captura de pantalla', 'estoy viendo', 'capturar pantalla', 'capturar pantalla', 'captura la pantalla', 'screenshot', 'capturame la pantalla']): # Saca una captura de pantalla
         screenshot = pyautogui.screenshot()
         now = f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'.replace(' ', '_').replace(':', '_')
-        screenshot.save(f'{now}_screenshot.png')
+        screenshot.save(f'capturas_de_pantalla/{now}_screenshot.png')
         print_and_talk('Captura guardada')
         
-    elif 'cronometro' in rec and (any(word in rec for word in ['inicia', 'comenza', 'comienza']) or any(word in rec for word in ['detene', 'para', 'deten'])):
+    elif 'cronometro' in rec and (any(word in rec for word in ['inicia', 'comenza', 'comienza']) or any(word in rec for word in ['para', 'deten'])):
         global cronometro
         cronometro = utils.cronometro(rec, cronometro, print_and_talk, humor)
         
     elif 'alarma' in rec: utils.mixer_(rec, print_and_talk)
     
-    elif any(word in rec for word in ['humor actual', 'nivel de humor']) and 'al' not in rec: print_and_talk(f'Nivel de humor al {humor}%. Si querés modificarlo debés decir "humor al n%" o lee las notas de ayuda')        
+    elif any(word in rec for word in ['humor actual', 'nivel de humor']) and ' al' not in rec: print_and_talk(f'Nivel de humor al {humor}%. Si querés modificarlo consulta las notas de ayudaS')        
         
     elif 'humor' in rec and '%' in rec:
-        humor_nuevo = utils.cambiar_humor(rec)
+        humor_nuevo = utils.obtener_numero(rec)
         if humor_nuevo == 100:
-            if 100*random.random() < 75:
-                frases = ['Formateo programado para las 22 horas', 'Autodestrucción en t menos 10 segundos', 'Humor al 100%']
-                print_and_talk(random.choice(frases))
-            else:
-                print_and_talk(f'Humor al {humor_nuevo}%')
+            frases = ['Formateo programado para las 22 horas', 'Autodestrucción en t menos 10 segundos', 'Humor al 100%']
+            print_and_talk(random.choice(frases))
             humor = humor_nuevo
         elif humor_nuevo >= 0 and humor_nuevo < 100:
             print_and_talk(f'Humor al {humor_nuevo}%')
@@ -250,7 +251,7 @@ def pedidoGenerico(rec: str) -> bool:
         print_and_talk('Abriendo código fuente')
     
     elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']): #Para que el ".exe" del asistente se actualice
-        if usuario == 'Ricardo': # Si alguien más aparte de mí accede a este if no hay problema, pero con esto trato de reducir esa posibilidad (me llamo Alejandro pero esta computadora tiene este usuario)
+        if usuario == 'Ricardo': # Si alguien más aparte de mí accede a este if no hay problema, pero con esto trato de reducir esa posibilidad (me llamo Alejandro pero mi computadora tiene este nombre de usuario)
             nombreAsistente = 'Asistente_virtual'
             print_and_talk('Actualizando asistente')
             os.chdir(f'{os.getcwd()}')

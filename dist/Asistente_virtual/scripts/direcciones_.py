@@ -6,10 +6,10 @@ direcciones = {
     'googlemaps': {
         'palClave': ['Google Maps', 'Maps'], # Palabras clave para identificar la página
         'url': 'https://www.google.com.ar/maps',
-        'buscador': 'https://www.google.com.ar/maps/search/' # Buscador
+        'buscador': 'https://www.google.com.ar/maps/search/' # Acceso al buscador de cada página
     },
     'google': {
-        'palClave': ['Google', 'el buscador'],
+        'palClave': ['Google', 'el buscador', 'navegador'],
         'url': 'https://www.google.com.ar/',
         'buscador': 'https://www.google.com.ar/search?q='        
     },
@@ -126,7 +126,7 @@ direcciones = {
         'url': 'https://buscagatos.netlify.app/',
     },
     'codigofuente': {
-        'palClave': ['codigo fuente'],
+        'palClave': ['codigo'],
         'url': 'https://github.com/Ale6100/Asistente-Virtual-Python.git',
     },
     'plazofijo': {
@@ -134,13 +134,33 @@ direcciones = {
         'url': 'https://simuladorplazofijo.netlify.app/',
     },
     'canciones': {
-        'palClave': ['cancion', 'musica'],
+        'palClave': ['canciones', 'musica'],
         'url': f'C:/Users/{usuario}/Music/av/musica.xspf',        
     },
     'ayuda': {
         'palClave': ['ayuda'],
         'url': f'https://github.com/Ale6100/Asistente-Virtual-Python.git#readme',        
-    }
+    },
+    'word': {
+        'palClave': ['word'],
+        'url': f'https://www.microsoft365.com/launch/word',        
+    },
+    'excel': {
+        'palClave': ['excel'],
+        'url': f'https://www.microsoft365.com/launch/excel',        
+    },
+    'powerpoint': {
+        'palClave': ['powerpoint'],
+        'url': f'https://www.microsoft365.com/launch/powerpoint',        
+    },
+    'outlook': {
+        'palClave': ['outlook'],
+        'url': f'https://office.live.com/start/Outlook.aspx',        
+    },
+    'gmail': {
+        'palClave': ['gmail'],
+        'url': f'https://mail.google.com/',        
+    }         
 }
 
 dir_mixer = {
