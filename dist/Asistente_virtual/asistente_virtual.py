@@ -3,7 +3,7 @@ import speech_recognition as sr # Reconocimiento de voz
 import threading
 import scripts.utils as utils
 import pyautogui
-from datetime import datetime   #Importa la hora
+from datetime import datetime #Importa la hora
 import os
 import shutil
 import scripts.direcciones_ as direcciones_
@@ -174,7 +174,7 @@ def pedidoGenerico(rec: str) -> bool:
     elif "atajo " in rec and len(rec.split())-1 >= rec.split().index('atajo')+1:
         utils.atajos(rec, print_and_talk)
     
-    elif any(word in rec for word in ['abri', 'abras', 'abre', 'ir a']): utils.abrir(rec, print_and_talk) #Abre archivos que estén en la biblioteca "direccion"
+    elif any(word in rec for word in ['abri', 'abras', 'abre', 'ir a']): utils.abrir(rec, print_and_talk, humor) # Abre archivos que estén en la biblioteca "direccion"
     
     elif any(word in rec for word in ['reprod', 'pone']) and any(word in rec for word in ['cancion', 'musica']):
         if os.path.exists(f'{direcciones_.direcciones["canciones"]["url"]}'):
@@ -245,10 +245,12 @@ def pedidoGenerico(rec: str) -> bool:
     elif any(word in rec for word in ['ayuda', 'no entiendo', 'cosas puedes hacer', 'cosas podes hacer']):
         webbrowser.open(f'{direcciones_.direcciones["ayuda"]["url"]}')
         print_and_talk('Proporcionando ayuda')
+        if utils.deHumor(humor): utils.mixer_varias_opciones(['buen_servicio'], print_and_talk)
         
     elif 'ver codigo fuente' in rec:
         webbrowser.open(f'{direcciones_.direcciones["codigofuente"]["url"]}')
         print_and_talk('Abriendo código fuente')
+        if utils.deHumor(humor): utils.mixer_varias_opciones(['buen_servicio', 'es_bellisimo'], print_and_talk)
     
     elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']): #Para que el ".exe" del asistente se actualice
         if usuario == 'Ricardo': # Si alguien más aparte de mí accede a este if no hay problema, pero con esto trato de reducir esa posibilidad (me llamo Alejandro pero mi computadora tiene este nombre de usuario)
