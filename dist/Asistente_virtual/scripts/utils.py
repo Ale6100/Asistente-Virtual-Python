@@ -20,24 +20,28 @@ dir_mixer = direcciones_.dir_mixer
 def eliminar_frases_introductorias(rec: str, array: list) -> str:
     frases_a_borrar = [ f'{frase} ' for frase in array ] # Agrega un espacio en cada frase
     frases_a_borrar_ordenadas = sorted(frases_a_borrar, key=lambda x: len(x), reverse=True) # Reordena según la longitud de caracteres, de mayor a menor
-    frases_a_borrar_exp_reg = '|'.join(frases_a_borrar_ordenadas)  
     
-    while re.match(fr'^({frases_a_borrar_exp_reg})', rec):
+    continuar = True
+    while continuar: # Se asegura de que las frases de "frases_a_borrar" se eliminen de rec, siempre y cuando se ubiquen al principio
         for frase in frases_a_borrar_ordenadas:
-            if rec[:len(frase)] == frase:
+            if rec.startswith(frase):
                 rec = rec[len(frase):]
-                break        
+                break
+        else: # El else se ejecuta si el for no se interrumpió
+            continuar = False
     return rec
 
-def eliminar_frases_finales(rec: str) -> str:
+def eliminar_frases_finales(rec: str) -> str: # Análogo a eliminar_frases_introductorias
     frases_a_borrar = ['por favor', 'gracias', 'muchas gracias', 'muchisimas gracias']
     frases_a_borrar_ordenadas = sorted(frases_a_borrar, key=lambda x: len(x), reverse=True)
-    frases_a_borrar_exp_reg = '|'.join(frases_a_borrar_ordenadas)
-    while re.search(fr'{frases_a_borrar_exp_reg}$', rec):
+    continuar = True
+    while continuar:
         for frase in frases_a_borrar_ordenadas:
-            if rec[-len(frase):] == frase:
+            if rec.endswith(frase):
                 rec = rec[:-len(frase)-1]
                 break
+        else:
+            continuar = False
     return rec
 
 def buscar(rec: str) -> bool:
@@ -127,7 +131,7 @@ def atajos(rec: str, print_and_talk):
     if contador == 9:
         print_and_talk('Los atajos son números del 1 al 9')
 
-def abrir(rec: str, print_and_talk):
+def abrir(rec: str, print_and_talk, humor):
     array_palClave = []
     for dir in direcciones: # Crea un array con todas las palabras clave del diccionario "direcciones"
         if 'palClave' in direcciones[dir] and 'url' in direcciones[dir]:
@@ -143,8 +147,11 @@ def abrir(rec: str, print_and_talk):
     for dir in direcciones: # Crea un array con todas las palabras clave del diccionario "direcciones"
         if 'url' in direcciones[dir]:
             if sitio in direcciones[dir]['palClave']:
-                if "http" in direcciones[dir]['url']: # Si se intenta abrir un sitio web
+                if "http" in direcciones[dir]['url']: # Si se intenta abrir un sitio web                        
                     webbrowser.open(f'{direcciones[dir]["url"]}')
+                    if dir == 'codigofuente' and deHumor(humor): mixer_varias_opciones(['buen_servicio', 'es_bellisimo'], print_and_talk)
+                    if dir == 'ayuda' and deHumor(humor): mixer_varias_opciones(['buen_servicio'], print_and_talk)
+                    
                 elif direcciones[dir]['url'].startswith('C:'): # Si se intenta abrir un archivo local
                     if os.path.exists(f'{direcciones[dir]["url"]}'): os.startfile(f'{direcciones[dir]["url"]}')
                     

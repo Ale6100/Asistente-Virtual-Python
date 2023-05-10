@@ -202,7 +202,7 @@ dir_mixer = {
     },
     'Hasta_la_proxima': {
         'nombre': 'Hasta_la_proxima',
-        'volumen': 0.3
+        'volumen': 0.1
     },
     'Ah_re_bolu': {
         'nombre': 'Ah_re_bolu',
@@ -215,5 +215,13 @@ dir_mixer = {
     'Imbec': {
         'nombre': 'Imbec',
         'volumen': 0.75
-    }                     
+    },
+    'buen_servicio': {
+        'nombre': 'que_buen_servicio',
+        'volumen': 0.33
+    },
+    'es_bellisimo': {
+        'nombre': 'es_bellisimo',
+        'volumen': 1
+    }                          
 }

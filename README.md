@@ -4,15 +4,36 @@ Bienvenido! este es mi primer asistente con Python. Hace poco hice uno con JavaS
 
 Mi objetivo con este proyecto es lograr que el asistente sea lo suficientemente útil como para que desees utilizarlo a diaro, sabiendo que lo puedes dejar encendido en segundo plano para que esté listo en cualquier momento que lo necesites.
 
-Por ahora no está listo para que lo puedas usar, sin embargo puedes descargar el proyecto y abrir el ejecutable "Asistente_virtual.exe" en la carpeta "dist/Asistente_virtual" para ver el estado actual.
+## Comenzando 🚀
 
-Estoy abierto a sugerencias!
+Por ahora no es completamente funcional, sin embargo puedes leer las siguientes instrucciones si deseas obtener una copia del proyecto en tu computadora.
 
-## Activadores 🤖
+Primero debes descargar el archivo comprimido _zip_ desde el botón verde "code" o  hacer click [aquí](https://github.com/Ale6100/Asistente-Virtual-Python/archive/refs/heads/main.zip).
+
+### Pre-requisitos 📋
+El código está hecho y testeado usando la versión 3.11.2 de Python y un windows 10 de 64bits.
+
+También se necesitan muchas librerías que en un futuro dejaré más claro cómo instalarlas. Por ahora puedes probar leyendo las documentaciones en sus respectivos sitios.
+
+### Instalación y uso 🔧
+
+Puedes ver el estado actual del asistente abriendo el ejecutable "Asistente_virtual.exe" en la carpeta "dist/Asistente_virtual". Si te da error o deseas modificarlo, considera que la carpeta dist se genera automáticamente a la hora de compilar el proyecto entero. El código central está repartido entre los archivos [asistente_virtual.py](asistente_virtual.py) (asistente) y [GUI.py](GUI.py) (interfaz gráfica).
+
+Puedes ejecutar el archivo GUI.py cada vez que hagas un cambio para iniciar al asistente y testear si funciona. Una vez que estés conforme con tus cambios, coloca en la terminal el comando
+
+```
+pyinstaller --windowed --name "Asistente_virtual" --add-binary "complementos/audio/*.mp3;complementos/audio" --add-data "complementos;complementos" --add-data "scripts;scripts" --icon=complementos/icon.ico --add-data "asistente_virtual.py;." GUI.py
+```
+
+para compilar el proyecto en la carpeta dist. Asegúrate de haber eliminado (o vaciado) la carpeta dist antes de compilar para evitar errores imprevistos. Abre el archivo Asistente_virtual.exe tal como expliqué anteriormente y utiliza tu versión modificada!
+
+## Pedidos por voz 🤖
 
 * Todas los pedidos deben iniciar con el nombre del asistente. Por ahora se llama "Okay" por simplicidad
 
 * Sólo podrás hablar cuando el texto "Escuchando..." está visible
+
+* Te responde "no te entendí" cuando escuchó algo pero no lo relacionó con ningún pedido existente. Esto significa que pudo haber entendido mal o hiciste un pedido que no está dentro de los disponibles
 
 * Todas las palabras clave tienen variantes (por ejemplo en vez de decir "abre" se puede decir "abrís")
 
@@ -52,6 +73,8 @@ Estoy abierto a sugerencias!
 
 Tiene 3 activadores más pero solo están para aumentar la interactividad (`okey` a secas, `hola` y `gracias`)
 
+Estoy abierto a sugerencias!
+
 # Limitaciones 🚨
 
 1. Está hecho para ser utilizado en windows
@@ -61,7 +84,6 @@ Tiene 3 activadores más pero solo están para aumentar la interactividad (`okey
 3. Se necesita conexión activa a internet para que funcione el reconocedor de voz. En caso de que se desconecte, tratará de reconectarse dos veces
 
 4. Existe una mínima posibilidad de que el asistente se bloquee si suspendes la computadora y la vuelves a encender. Si eso pasa simplemente reinicialo apretando en el botón "Detener asistente" y luego en "Iniciar asistente"
-
 
 ## Autor ✒️
 
