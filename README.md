@@ -1,35 +1,37 @@
-# Asistente virtual en Python (no terminado)
+# Asistente virtual en Python
 
-Bienvenido! este es mi primer asistente con Python. Hace poco hice uno con JavaScript (https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
+Bienvenido! este es mi primer asistente con Python. Hace un tiempo hice uno con JavaScript (https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
 
 Mi objetivo con este proyecto es lograr que el asistente sea lo suficientemente útil como para que desees utilizarlo a diaro, sabiendo que lo puedes dejar encendido en segundo plano para que esté listo en cualquier momento que lo necesites.
 
 ## Comenzando 🚀
 
-Por ahora no es completamente funcional, sin embargo puedes leer las siguientes instrucciones si deseas obtener una copia del proyecto en tu computadora.
+Lee las siguientes instrucciones si deseas obtener una copia del proyecto en tu computadora.
 
 Primero debes descargar el archivo comprimido _zip_ desde el botón verde "code" o  hacer click [aquí](https://github.com/Ale6100/Asistente-Virtual-Python/archive/refs/heads/main.zip).
 
 ### Pre-requisitos 📋
-El código está hecho y testeado usando la versión 3.11.2 de Python y un windows 10 de 64bits.
+El código está hecho y testeado utilizando la versión 3.11.4 de Python y un windows 11 de 64bits.
 
-También se necesitan muchas librerías que en un futuro dejaré más claro cómo instalarlas. Por ahora puedes probar leyendo las documentaciones en sus respectivos sitios.
+Estoy consciente de que no estoy dejando documentación de las librerías utilizadas, es una tarea que tengo pendiente.
 
 ### Instalación y uso 🔧
 
-Puedes ver el estado actual del asistente abriendo el ejecutable "Asistente_virtual.exe" en la carpeta "dist/Asistente_virtual". Si te da error o deseas modificarlo, considera que la carpeta dist se genera automáticamente a la hora de compilar el proyecto entero. El código central está repartido entre los archivos [asistente_virtual.py](asistente_virtual.py) (asistente) y [GUI.py](GUI.py) (interfaz gráfica).
+Puedes ver el estado actual del asistente abriendo el ejecutable "Asistente_virtual.exe" en la carpeta [dist/Asistente_virtual](dist/Asistente_virtual). Si te da error o deseas modificarlo, considera que la carpeta dist se genera automáticamente a la hora de compilar el proyecto entero. El código central está repartido entre los archivos [asistente_virtual.py](asistente_virtual.py) (asistente) y [GUI.py](GUI.py) (interfaz gráfica).
 
 Puedes ejecutar el archivo GUI.py cada vez que hagas un cambio para iniciar al asistente y testear si funciona. Una vez que estés conforme con tus cambios, coloca en la terminal el comando
 
 ```
-pyinstaller --windowed --name "Asistente_virtual" --add-binary "complementos/audio/*.mp3;complementos/audio" --add-data "complementos;complementos" --add-data "scripts;scripts" --icon=complementos/icon.ico --add-data "asistente_virtual.py;." GUI.py
+pyinstaller --windowed --name "Asistente_virtual" --add-data "complementos;complementos" --add-data "scripts;scripts" --icon=complementos/icon.ico --add-data "asistente_virtual.py;." GUI.py
 ```
 
-para compilar el proyecto en la carpeta dist. Asegúrate de haber eliminado (o vaciado) la carpeta dist antes de compilar para evitar errores imprevistos. Abre el archivo Asistente_virtual.exe tal como expliqué anteriormente y utiliza tu versión modificada!
+para compilar el proyecto en la carpeta dist. Asegúrate de haber eliminado (o vaciado) la carpeta dist antes de compilar para evitar errores imprevistos. Luego abre el archivo Asistente_virtual.exe tal como expliqué anteriormente y utiliza tu versión modificada!
 
 ## Pedidos por voz 🤖
 
 * Todas los pedidos deben iniciar con el nombre del asistente. Por ahora se llama "Okay" por simplicidad
+
+* Pedido encapsulado: Para mejorar el entendimiento, opcionalmente puedes decir su nombre por segunda vez en un mismo pedido. En este caso, el asistente interpretará que el pedido está en medio de la primera y la segunda vez que lo nombraste
 
 * Sólo podrás hablar cuando el texto "Escuchando..." está visible
 
@@ -46,7 +48,7 @@ para compilar el proyecto en la carpeta dist. Asegúrate de haber eliminado (o v
 | `basta` | Apaga al asistente | Okay, basta | --- |
 | `cancelar` | Cancela el pedido que estás solicitando | Okay, abrir YouTube. No, cancelar | La palabra `cancelar` debe decirse al final |
 | `en` n `minutos` | Programa la ejecución de otro pedido para dentro de n minutos | Okay, abrir Netflix en tres minutos | `minutos` debe decirse al final, y "n" debe ser un número natural |
-| `buscar` X `en` Y | Busca en el sitio Y lo que le pediste (X) | Okay, buscar "Mercado Libre" en Linkedin | Debe invocarse tal como se especifica en "Descripción". Sólo funciona en sitios preconfigurados |
+| `buscar` X `en` Y | Busca en el sitio Y lo que le pediste (X) | Okay, buscar "Mercado Libre" en Linkedin | Debe invocarse siguiendo el patrón mencionado. Sólo funciona en sitios preconfigurados |
 | `escribir` | Escribe lo que quieras (sin símbolos) | Okay, escribir "comprar salsa de tomate" | La palabra `escribir` debe decirse al principio |
 | `repetí` | Repite lo que quieras | Okay, repetí "hola me llamo Roberto" | La palabra `repetí` debe decirse al principio |
 | `estas ahí` | Esto es más que nada para chequar si te está escuchando | Okay, ¿estás ahí? | --- |
@@ -75,7 +77,7 @@ Tiene 3 activadores más pero solo están para aumentar la interactividad (`okey
 
 Estoy abierto a sugerencias!
 
-# Limitaciones 🚨
+## Limitaciones 🚨
 
 1. Está hecho para ser utilizado en windows
 
