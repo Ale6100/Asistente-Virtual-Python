@@ -135,7 +135,7 @@ direcciones = {
     },
     'canciones': {
         'sitios': ['canciones', 'musica', 'lista de reproduccion'],
-        'url': f'C:/Us2ers/{usuario}/Music/av/musica.xspf',        
+        'url': f'C:/Users/{usuario}/Music/av/musica.xspf',        
     },
     'ayuda': {
         'sitios': ['ayuda'],
