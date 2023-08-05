@@ -8,15 +8,11 @@ frasesIntroductorias = [ # Frases iniciales que se filtran de rec cuando inicia 
     'me gustaria',
     'me gustaria que'
     'serias tan amable de',
-    # 'interesaria',
     'seria de gran ayuda si',
     'harias un gran favor si pudieras',
-    # 'que',
     'podes',
     'puedes',
     'estaria bueno',
-    # 'sos capaz de',
-    # "me",
     "che",
     'quiero que'
 ]
@@ -52,4 +48,21 @@ frases_de_buscar = [ # Frases iniciales que se filtran de rec dentro de la funci
     'busques',
     'busques el',
     'busques la'
+]
+
+frases_de_escribir = [
+    'escribir',
+    'escribis',
+    'escribi',
+    'escribes',
+    'escribe',
+    'escribas'
+]
+
+frases_de_repetir = [
+    'repeti',
+    'repite',
+    'repetis',
+    'repetir',
+    'repitas'
 ]

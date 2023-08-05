@@ -52,10 +52,10 @@ root.geometry("275x100")
 root.iconbitmap('complementos/icon.ico') 
 
 def cerrar(): # Configurar la acción al cerrar la ventana
-    global ventana_abierta
     if messagebox.askokcancel("Cerrar", "¿Quieres cerrar el asistente?"):
         detener()
         root.destroy()
+        global ventana_abierta
         ventana_abierta = False
 
 root.protocol("WM_DELETE_WINDOW", cerrar)
@@ -66,7 +66,7 @@ start_button.pack()
 stop_button = tk.Button(root, text="Detener asistente", command=detener, state=tk.DISABLED)
 stop_button.pack()
 
-help_button = tk.Button(root, text="Ayuda", command=lambda: webbrowser.open(f'{direcciones_.direcciones["ayuda"]["url"]}'))
+help_button = tk.Button(root, text="Ayuda", command=lambda: webbrowser.open(direcciones_.direcciones["codigofuente"]["url"]))
 help_button.pack()
 
 label = tk.Label(root, text='Presiona en "iniciar"')

@@ -126,7 +126,7 @@ direcciones = {
         'url': 'https://buscagatos.netlify.app/',
     },
     'codigofuente': {
-        'sitios': ['codigo'],
+        'sitios': ['codigo', 'documentacion', 'ayuda'],
         'url': 'https://github.com/Ale6100/Asistente-Virtual-Python.git',
     },
     'plazofijo': {
@@ -136,10 +136,6 @@ direcciones = {
     'canciones': {
         'sitios': ['canciones', 'musica', 'lista de reproduccion'],
         'url': f'C:/Users/{usuario}/Music/av/musica.xspf',        
-    },
-    'ayuda': {
-        'sitios': ['ayuda'],
-        'url': 'https://github.com/Ale6100/Asistente-Virtual-Python.git#pedidos-por-voz-',        
     },
     'word': {
         'sitios': ['word'],
@@ -160,6 +156,10 @@ direcciones = {
     'gmail': {
         'sitios': ['gmail'],
         'url': 'https://mail.google.com/',        
+    },
+    'chatgpt': {
+        'sitios': ['chat gpt'],
+        'url': 'https://chat.openai.com/',
     }
 }
 
