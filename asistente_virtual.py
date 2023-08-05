@@ -11,8 +11,7 @@ import webbrowser
 import pyjokes
 import time
 import random
-import sys
-from scripts.frases_a_filtrar import frasesIntroductorias
+import scripts.frases_a_filtrar as frasesAFiltrar
 
 #! Variables iniciales
 usuario = os.environ.get('USERNAME') or os.environ.get('USER') # El usuario de tu PC actual
@@ -20,7 +19,7 @@ NAME = 'okay' # Le definimos un nombre al asistente, o simplemente una palabra c
 intentos = 0
 continuar = True
 cronometro = 0
-humor = 100 # Porcentaje de humor al n%. Significa que va a poner un audio "gracioso" el n% de las veces en los pedidos que tengan humor configurado
+humor = 5 # Porcentaje de humor al n%. Significa que va a poner un audio "gracioso" el n% de las veces en los pedidos que tengan humor configurado
 ERROR_RECONOCEDOR = '--error--'
 
 #! Configuración de audio
@@ -40,8 +39,7 @@ engine.setProperty('voice', v_elegida)
 
 #! Configuramos los mensajes en la consola y la salida de audio
 def print_(text: str):
-    print(text)
-    sys.stdout.flush() # Pongo esto para que se vacíe el búfer de salida estándar después de cada print para que los prints se envíen al proceso padre (correspondiente al GUI.py) en tiempo real
+    print(text, flush=True) # El flush para que se vacíe el búfer de salida estándar después de cada print para que los prints se envíen al proceso padre (correspondiente al GUI.py) en tiempo real
 
 def print_and_talk(text: str): # El asistente imprime el texto pasado como argumento y lo reproduce
     print_(text)
@@ -76,10 +74,10 @@ def run():
         rec = rec[index_first_name+len(NAME):].strip() # Recorta la grabación hasta el momento donde se dice el nombre
     pedidos(rec)
 
-def listen() -> str: # Se llama a sí misma hasta que detecte que se llamó al asistente por su nombre o hasta que de error
-    rec = reconocer_voz_y_pasarlo_a_texto()
-    if NAME in rec or rec == ERROR_RECONOCEDOR: return rec
-    else: return listen()
+def listen() -> str: # Se repite el while hasta que detecte que se llamó al asistente por su nombre o hasta que de error
+    while True:
+        rec = reconocer_voz_y_pasarlo_a_texto()
+        if NAME in rec or rec == ERROR_RECONOCEDOR: return rec
 
 def reconocer_voz_y_pasarlo_a_texto(fallos_conexion=0) -> str: # Definimos la función que reconocerá la voz y la convertirá en texto
     otro_intento()
@@ -119,9 +117,8 @@ def pedidos(rec: str) -> str:
             return print_and_talk('hola')
         
         rec = rec.replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u').replace('Á', 'A').replace('É', 'E').replace('Í', 'I').replace('Ó', 'O').replace('Ú', 'U') # Quito todas las tildes
-        rec = utils.eliminar_frases_introductorias(rec, frasesIntroductorias)
+        rec = utils.eliminar_frases_introductorias(rec, frasesAFiltrar.frasesIntroductorias)
         rec = utils.eliminar_frases_finales(rec)
-        
         if pedidoPreciso(rec): None # Considero dos tipos de pedidos distintos. Si hacemos un "pedido preciso", esta función ejecuta el pedido solicitado y devuelve True
         
         elif pedidoGenerico(rec): None
@@ -132,7 +129,7 @@ def pedidos(rec: str) -> str:
 
 def pedidoPreciso(rec: str) -> bool: # Denomino "pedido preciso" a todos aquellos pedidos que necesitan ser solicitados de manera específica, no de cualquier forma
     if False: pass
-    elif any(word == rec.split(' ')[-1] for word in ['cancela', 'cancelar', 'cancelas', 'cancelalo', 'olvidalo']): # Cancela el pedido que estás solicitando. La palabra "cancelar" debe decirse al final (o alguna variante similar)
+    elif any(word == rec.split(' ')[-1] for word in ['cancela', 'cancelar', 'cancelas', 'cancelalo', 'olvidalo', 'cancelarlo']): # Cancela el pedido que estás solicitando. La palabra "cancelar" debe decirse al final (o alguna variante similar)
         print_and_talk('Ok, cancelo el pedido')
     
     elif any(word == rec.split(' ')[-1] for word in ['minuto', 'minutos']) and (rec.split(' ')[-3] == 'en'): # Programa la ejecución de otro pedido para dentro de n minutos. "minutos" debe decirse al final, y "n" debe ser un número natural
@@ -151,15 +148,6 @@ def pedidoPreciso(rec: str) -> bool: # Denomino "pedido preciso" a todos aquello
             print_and_talk('Ok, lo recordaré')
     
     elif utils.buscar(rec): print_and_talk('Hecho')
-        
-    elif any(rec.startswith(word) for word in ['escribir ', 'escribis ', 'escribi ', 'escribes ', 'escribe ']):  # Escribe todo lo que le pediste
-        pedido_escritura = utils.eliminar_frases_introductorias(rec, ['escribir', 'escribis', 'escribi', 'escribes', 'escribe'])
-        pyautogui.typewrite(pedido_escritura)
-        print_and_talk('Hecho')
-        
-    elif any(rec.startswith(word) for word in ['repeti ', 'repite ', 'repetis ', 'repetir ', 'repitas ']):  # Repite todo lo que le pediste
-        pedido_repetir = utils.eliminar_frases_introductorias(rec, ['repeti', 'repite', 'repetis', 'repetir', 'repitas'])
-        print_and_talk(pedido_repetir)
     
     else: return False
     return True
@@ -167,6 +155,17 @@ def pedidoPreciso(rec: str) -> bool: # Denomino "pedido preciso" a todos aquello
 def pedidoGenerico(rec: str) -> bool:
     global humor
     if False: pass
+    elif any(frase in rec for frase in frasesAFiltrar.frases_de_escribir):
+        rec = utils.eliminar_hasta_encontrar_alguna_frase(rec, frasesAFiltrar.frases_de_escribir)
+        rec = ' '.join(rec.split(' ')[1:])
+        pyautogui.typewrite(rec)
+        print_and_talk('Hecho')
+        
+    elif any(frase in rec for frase in frasesAFiltrar.frases_de_repetir):  # Repite todo lo que le pediste
+        rec = utils.eliminar_hasta_encontrar_alguna_frase(rec, frasesAFiltrar.frases_de_repetir)
+        rec = ' '.join(rec.split(' ')[1:])
+        print_and_talk(rec)  
+    
     elif any(word in rec for word in ['estas ahi', 'estas por ahi', 'seguis ahi', 'me estas escuchando']):
         if utils.deHumor(humor): utils.mixer_varias_opciones(['No_lo_se_tu_dime'], print_and_talk)
         else: print_and_talk('Estoy aquí')
@@ -185,19 +184,19 @@ def pedidoGenerico(rec: str) -> bool:
     elif any(word in rec for word in ['abri', 'abras', 'abre', 'ir a']): utils.abrir(rec, print_and_talk, humor) # Abre archivos que estén en la biblioteca "direccion"
     
     elif any(word in rec for word in ['reprod', 'pone']) and any(word in rec for word in ['cancion', 'musica', 'lista de reproduccion']):
-        if os.path.exists(f'{direcciones_.direcciones["canciones"]["url"]}'):
-            os.startfile(f'{direcciones_.direcciones["canciones"]["url"]}')
+        if os.path.exists(direcciones_.direcciones["canciones"]["url"]):
+            os.startfile(direcciones_.direcciones["canciones"]["url"])
             pyautogui.press('volumedown', 50), pyautogui.press('volumeup', 10)
             print_and_talk('Reproduciendo música')
         else:
-            webbrowser.open(f'{direcciones_.direcciones["ayuda"]["url"]}')
+            webbrowser.open(direcciones_.direcciones["codigofuente"]["url"])
             print_and_talk(f'Error: debes colocar un archivo de audio para que yo pueda reproducirlo. Consulta el block de ayuda para más información')
     
-    elif any(word in rec for word in ['cerrar', 'cierra']):                         
+    elif 'cierr' in rec and any(word in rec for word in ['ventana', 'programa', 'archivo']):                         
         pyautogui.hotkey('alt', 'F4')
         print_and_talk('Hecho')
         
-    elif any(word in rec for word in ['mute', 'silenci']):
+    elif any(word in rec for word in ['mute']):
         pyautogui.hotkey('volumemute')
         print_and_talk('Hecho')
         
@@ -207,7 +206,7 @@ def pedidoGenerico(rec: str) -> bool:
         
     elif 'minimiza' in rec: # Minimiza el programa actual
         pyautogui.hotkey('alt', 'space', hold='down')
-        time.sleep(0.1)
+        time.sleep(0.2)
         pyautogui.press('n')
         print_and_talk('Hecho')
         
@@ -217,28 +216,28 @@ def pedidoGenerico(rec: str) -> bool:
     
     elif any(word in rec for word in ['basta', 'apaga', 'apagues']): detener() # Apaga al asistente
     
-    elif any(word in rec for word in ['como te llamas', 'cual es tu nombre']):
+    elif any(word in rec for word in ['como te llamas', 'cual es tu nombre', 'decime tu nombre']):
         if utils.deHumor(humor): utils.mixer_varias_opciones(['Excel_preg', 'Marad_ee', 'No_lo_se_tu_dime', 'muy_buena_preg', 'info_vale_millones', 'Uvuewewe'], print_and_talk)  
         else: print_and_talk(f'Me llamo {NAME}')    
     
-    elif "tecla " in rec and len(rec.split())-1 >= rec.split().index('tecla')+1: # Si dice la palabra "tecla" en cualquier momento excepto en la palabra final, presiona la tecla pedida
-        utils.apretar_tecla(rec, print_and_talk)    
+    elif "tecla " in rec and len(rec.split())-1 >= rec.split().index('tecla')+1: # Si dice la palabra "tecla" en cualquier momento excepto en la palabra final, presiona la tecla pedida luego de esa palabra. Ej: "Presiona la tecla p por favor"
+        utils.apretar_tecla(rec, print_and_talk)
     
-    elif any(word in rec for word in ['captura de pantalla', 'estoy viendo', 'capturar pantalla', 'capturar pantalla', 'captura la pantalla', 'screenshot', 'capturame la pantalla']): # Saca una captura de pantalla
+    elif any(word in rec for word in ['captura de pantalla', 'que estoy viendo', 'capturar pantalla', 'captura la pantalla', 'screenshot', 'capturame la pantalla']): # Saca una captura de pantalla
         screenshot = pyautogui.screenshot()
-        now = f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'.replace(' ', '_').replace(':', '_')
         carpeta_contenedora = 'capturas_de_pantalla'
         if not os.path.exists(carpeta_contenedora): os.makedirs(carpeta_contenedora)
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S").replace(' ', '_').replace(':', '_')
         screenshot.save(f'{carpeta_contenedora}/{now}_screenshot.png')
         print_and_talk('Captura guardada')
         
-    elif 'cronometro' in rec and (any(word in rec for word in ['inicia', 'comenza', 'comienza']) or any(word in rec for word in ['para', 'deten'])):
+    elif 'cronometro' in rec and any(word in rec for word in ['inicia', 'comenza', 'comienza']) or any(word in rec for word in ['para', 'deten']):
         global cronometro
         cronometro = utils.cronometro(rec, cronometro, print_and_talk, humor)
         
-    elif 'alarma' in rec: utils.mixer_(rec, print_and_talk)
+    elif 'alarma' in rec and 'minuto' in rec: utils.mixer_(rec, print_and_talk)
     
-    elif any(word in rec for word in ['humor actual', 'nivel de humor']): print_and_talk(f'Nivel de humor al {humor}%. Si querés modificarlo consulta las notas de ayuda')        
+    elif any(word in rec for word in ['humor actual', 'nivel de humor']) and ' al' not in rec: print_and_talk(f'Nivel de humor al {humor}%. Si querés modificarlo consulta las notas de ayuda')        
         
     elif 'humor' in rec and '%' in rec:
         humor_nuevo = utils.obtener_entero_de_cadena(rec)
@@ -253,24 +252,25 @@ def pedidoGenerico(rec: str) -> bool:
             print_and_talk('El nivel de humor se pide en términos porcentuales del 0 al 100')
             if utils.deHumor(humor): utils.mixer_varias_opciones(['Ah_re_bolu', 'Estup', 'Imbec'], print_and_talk)
             
-    elif any(word in rec for word in ['ayuda', 'no entiendo', 'cosas puedes hacer', 'cosas podes hacer']):
-        webbrowser.open(f'{direcciones_.direcciones["ayuda"]["url"]}')
+    elif any(word in rec for word in ['ayuda', 'no entiendo', 'que cosas puedes hacer', 'que cosas podes hacer', 'que puedes hacer', 'que podes hacer']):
+        webbrowser.open(direcciones_.direcciones["codigofuente"]["url"])
         print_and_talk('Proporcionando ayuda')
         if utils.deHumor(humor): utils.mixer_varias_opciones(['buen_servicio'], print_and_talk)
         
     elif 'ver codigo fuente' in rec:
-        webbrowser.open(f'{direcciones_.direcciones["codigofuente"]["url"]}')
+        webbrowser.open(direcciones_.direcciones["codigofuente"]["url"])
         print_and_talk('Abriendo código fuente')
         if utils.deHumor(humor): utils.mixer_varias_opciones(['buen_servicio', 'es_bellisimo'], print_and_talk)
     
-    elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']): #Para que el ".exe" del asistente se actualice
+    elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']): # Para que el ".exe" del asistente se actualice
         if usuario == 'Ricardo': # Si alguien más aparte de mí accede a este if no hay problema, pero con esto trato de reducir esa posibilidad (me llamo Alejandro pero mi computadora tiene este nombre de usuario)
             print_and_talk('Actualizando asistente')
             nombreAsistente = 'Asistente_virtual'
-            os.chdir(f'{os.getcwd()}') # Línea necesaria para que funcione sin importar si ejecuto esto desde acá o desde GUI.py
-            os.system(f'pyinstaller --windowed --name "{nombreAsistente}" --add-data "complementos;complementos" --add-data "scripts;scripts" --icon=complementos/icon.ico --add-data "asistente_virtual.py;." GUI.py') # --onefile
-            os.remove(f'{os.getcwd()}/{nombreAsistente}.spec')
-            shutil.rmtree(f'{os.getcwd()}/build') # Elimina la carpeta build
+            current_dir = os.getcwd()
+            os.chdir(f'{current_dir}') # Línea necesaria para que funcione sin importar si ejecuto esto desde acá o desde GUI.py
+            os.system(f'pyinstaller --windowed --name "{nombreAsistente}" --add-data "complementos;complementos" --add-data "scripts;scripts" --icon=complementos/icon.ico --add-data "asistente_virtual.py;." GUI.py') # Esta línea crea el nuevo archivo ejecutable
+            os.remove(f'{current_dir}/{nombreAsistente}.spec')
+            shutil.rmtree(f'{current_dir}/build') # Elimina la carpeta build
     else: return False
     return True
 
@@ -286,5 +286,5 @@ def iniciar(): # Nos aseguramos de que el asistente no deje de estar activo una 
     engine.stop()
     print_('Detenido')
 
-if __name__ == '__main__': # Si este archivo de python se ejecuta acá (es decir, si no lo estamos ejecutando desde otro script), entonces iniciamos el asistente
+if __name__ == "__main__": # Si este archivo de Python se ejecuta directamente (es decir, no está siendo importado por otro script), entonces iniciamos el asistente virtual llamando a la función "iniciar()"
     iniciar()
