@@ -24,31 +24,13 @@ frasesFinales = [ # Frases fnales que se filtran de rec cuando inicia el asisten
     'muchisimas gracias'
 ]
 
-frases_de_buscar = [ # Frases iniciales que se filtran de rec dentro de la función buscar()
-    'buscame',
-    'buscame el',
-    'buscame la',
-    
-    'buscar',
-    'buscar el',
-    'buscar la',
-    
-    'buscas',
-    'buscas el',
-    'buscas la',
-    
-    'busca',
-    'busca el',
-    'busca la',
-    
-    'buscarias',
-    'buscarias el',
-    'buscarias la',
-    
-    'busques',
-    'busques el',
-    'busques la'
-]
+palabras_raiz = ['buscame', 'buscar', 'buscas', 'busca', 'buscarias', 'busques'] # Frases iniciales que se filtran de rec dentro de la función buscar(), junto con los complementos de la siguiente lista
+complemento = [' el', ' la', ' los', ' las']
+frases_de_buscar = []
+for palabra in palabras_raiz:
+    frases_de_buscar.append(palabra)
+    for comp in complemento:
+        frases_de_buscar.append(palabra + comp)
 
 frases_de_escribir = [
     'escribir',

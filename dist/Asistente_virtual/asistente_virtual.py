@@ -12,14 +12,18 @@ import pyjokes
 import time
 import random
 import scripts.frases_a_filtrar as frasesAFiltrar
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 #! Variables iniciales
 usuario = os.environ.get('USERNAME') or os.environ.get('USER') # El usuario de tu PC actual
-NAME = 'okay' # Le definimos un nombre al asistente, o simplemente una palabra clave que hace que se active
+name = config.get('Assistant', 'name', fallback='okay') # Le definimos un nombre al asistente, o simplemente una palabra clave que hace que se active
+humor = config.getint('Assistant', 'humor', fallback=5) # Porcentaje de humor al n%. Significa que va a poner un audio "gracioso" el n% de las veces en los pedidos que tengan humor configurado
+cronometro = config.getfloat('Assistant', 'cronometro', fallback=0)
 intentos = 0
 continuar = True
-cronometro = 0
-humor = 5 # Porcentaje de humor al n%. Significa que va a poner un audio "gracioso" el n% de las veces en los pedidos que tengan humor configurado
 ERROR_RECONOCEDOR = '--error--'
 
 #! Configuración de audio
@@ -39,7 +43,7 @@ engine.setProperty('voice', v_elegida)
 
 #! Configuramos los mensajes en la consola y la salida de audio
 def print_(text: str):
-    print(text, flush=True) # El flush para que se vacíe el búfer de salida estándar después de cada print para que los prints se envíen al proceso padre (correspondiente al GUI.py) en tiempo real
+    print(text, flush=True) # El flush es para que se vacíe el búfer de salida estándar después de cada print para que los prints se envíen al proceso padre (correspondiente al GUI.py) en tiempo real
 
 def print_and_talk(text: str): # El asistente imprime el texto pasado como argumento y lo reproduce
     print_(text)
@@ -66,20 +70,20 @@ def otro_intento():
 def run():
     rec = listen() # Retorna el pedido de un usuario
     if rec == ERROR_RECONOCEDOR: return None # No trata de ejecutar ningún pedido si hubo algún error
-    index_first_name = rec.find(NAME) # Busca la posición donde inicia el nombre del asistente
-    index_second_name = rec.find(NAME, index_first_name + len(NAME)) # Busca la posición donde termina la segunda vez que se dijo el nombre del asistente (en caso de que lo haya dicho dos veces)
+    index_first_name = rec.find(name) # Busca la posición donde inicia el nombre del asistente
+    index_second_name = rec.find(name, index_first_name + len(name)) # Busca la posición donde termina la segunda vez que se dijo el nombre del asistente (en caso de que lo haya dicho dos veces)
     if index_second_name != -1: # Si el usuario dijo dos veces el nombre del asistente, entonces mejor, ya que podrá entender mejor el pedido. 
-        rec = rec[index_first_name+len(NAME) : index_second_name].strip() # Se quedará únicamente con lo que dijo en medio
+        rec = rec[index_first_name+len(name) : index_second_name].strip() # Se quedará únicamente con lo que dijo en medio
     else:
-        rec = rec[index_first_name+len(NAME):].strip() # Recorta la grabación hasta el momento donde se dice el nombre
-    pedidos(rec)
+        rec = rec[index_first_name+len(name):].strip() # Recorta la grabación hasta el momento donde se dice el nombre
+    pedidos(rec) # Ejecuta el pedido
 
 def listen() -> str: # Se repite el while hasta que detecte que se llamó al asistente por su nombre o hasta que de error
     while True:
         rec = reconocer_voz_y_pasarlo_a_texto()
-        if NAME in rec or rec == ERROR_RECONOCEDOR: return rec
+        if name in rec or rec == ERROR_RECONOCEDOR: return rec
 
-def reconocer_voz_y_pasarlo_a_texto(fallos_conexion=0) -> str: # Definimos la función que reconocerá la voz y la convertirá en texto
+def reconocer_voz_y_pasarlo_a_texto(fallos_conexion=0) -> str:
     otro_intento()
     try:
         with sr.Microphone() as source: # Abrimos el micrófono como fuente de entrada de audio
@@ -154,6 +158,7 @@ def pedidoPreciso(rec: str) -> bool: # Denomino "pedido preciso" a todos aquello
 
 def pedidoGenerico(rec: str) -> bool:
     global humor
+    global name
     if False: pass
     elif any(frase in rec for frase in frasesAFiltrar.frases_de_escribir):
         rec = utils.eliminar_hasta_encontrar_alguna_frase(rec, frasesAFiltrar.frases_de_escribir)
@@ -183,7 +188,7 @@ def pedidoGenerico(rec: str) -> bool:
     
     elif any(word in rec for word in ['abri', 'abras', 'abre', 'ir a']): utils.abrir(rec, print_and_talk, humor) # Abre archivos que estén en la biblioteca "direccion"
     
-    elif any(word in rec for word in ['reprod', 'pone']) and any(word in rec for word in ['cancion', 'musica', 'lista de reproduccion']):
+    elif any(word in rec for word in ['reprod', 'pon']) and any(word in rec for word in ['cancion', 'musica', 'lista de reproduccion']):
         if os.path.exists(direcciones_.direcciones["canciones"]["url"]):
             os.startfile(direcciones_.direcciones["canciones"]["url"])
             pyautogui.press('volumedown', 50), pyautogui.press('volumeup', 10)
@@ -218,7 +223,7 @@ def pedidoGenerico(rec: str) -> bool:
     
     elif any(word in rec for word in ['como te llamas', 'cual es tu nombre', 'decime tu nombre']):
         if utils.deHumor(humor): utils.mixer_varias_opciones(['Excel_preg', 'Marad_ee', 'No_lo_se_tu_dime', 'muy_buena_preg', 'info_vale_millones', 'Uvuewewe'], print_and_talk)  
-        else: print_and_talk(f'Me llamo {NAME}')    
+        else: print_and_talk(f'Me llamo {name}')    
     
     elif "tecla " in rec and len(rec.split())-1 >= rec.split().index('tecla')+1: # Si dice la palabra "tecla" en cualquier momento excepto en la palabra final, presiona la tecla pedida luego de esa palabra. Ej: "Presiona la tecla p por favor"
         utils.apretar_tecla(rec, print_and_talk)
@@ -233,7 +238,7 @@ def pedidoGenerico(rec: str) -> bool:
         
     elif 'cronometro' in rec and any(word in rec for word in ['inicia', 'comenza', 'comienza']) or any(word in rec for word in ['para', 'deten']):
         global cronometro
-        cronometro = utils.cronometro(rec, cronometro, print_and_talk, humor)
+        cronometro = utils.cronometro(rec, cronometro, print_and_talk, humor, config)
         
     elif 'alarma' in rec and 'minuto' in rec: utils.mixer_(rec, print_and_talk)
     
@@ -244,10 +249,10 @@ def pedidoGenerico(rec: str) -> bool:
         if humor_nuevo == 100:
             frases = ['Formateo programado para las 22 horas', 'Autodestrucción en t menos 10 segundos', 'Humor al 100%']
             print_and_talk(random.choice(frases))
-            humor = humor_nuevo
+            humor = utils.cambiar_valor(config, 'humor', humor_nuevo)
         elif humor_nuevo >= 0 and humor_nuevo < 100:
             print_and_talk(f'Humor al {humor_nuevo}%')
-            humor = humor_nuevo
+            humor = utils.cambiar_valor(config, 'humor', humor_nuevo)
         else:
             print_and_talk('El nivel de humor se pide en términos porcentuales del 0 al 100')
             if utils.deHumor(humor): utils.mixer_varias_opciones(['Ah_re_bolu', 'Estup', 'Imbec'], print_and_talk)
@@ -268,7 +273,7 @@ def pedidoGenerico(rec: str) -> bool:
             nombreAsistente = 'Asistente_virtual'
             current_dir = os.getcwd()
             os.chdir(f'{current_dir}') # Línea necesaria para que funcione sin importar si ejecuto esto desde acá o desde GUI.py
-            os.system(f'pyinstaller --windowed --name "{nombreAsistente}" --add-data "complementos;complementos" --add-data "scripts;scripts" --icon=complementos/icon.ico --add-data "asistente_virtual.py;." GUI.py') # Esta línea crea el nuevo archivo ejecutable
+            os.system(f'pyinstaller --windowed --name "{nombreAsistente}" --add-data "complementos;complementos" --add-data "scripts;scripts" --add-data "config.ini;." --icon=complementos/icon.ico --add-data "asistente_virtual.py;." GUI.py') # Esta línea crea el nuevo archivo ejecutable
             os.remove(f'{current_dir}/{nombreAsistente}.spec')
             shutil.rmtree(f'{current_dir}/build') # Elimina la carpeta build
     else: return False
