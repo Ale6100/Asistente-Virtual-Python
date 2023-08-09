@@ -1,6 +1,6 @@
 # Asistente virtual con Python
 
-Bienvenido! este es mi primer asistente creado Python. Hace un tiempo hice uno con JavaScript (https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
+Bienvenido! este es mi primer asistente creado con Python. Hace un tiempo hice uno con JavaScript (https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
 
 Mi objetivo con este proyecto es lograr que el asistente sea lo suficientemente útil como para que desees utilizarlo a diaro, sabiendo que lo puedes dejar encendido en segundo plano para que esté listo en cualquier momento que lo necesites.
 
@@ -30,9 +30,9 @@ Estoy consciente de que no estoy dejando documentación de las librerías utiliz
 
 4. Hazle un pedido! Considera que:
 
-    * Todas los pedidos deben iniciar con el nombre del asistente. Por ahora se llama "Okay" por simplicidad. Por ejemplo: `Okay, abrir Netflix`
+    * Todas los pedidos deben iniciar con el nombre del asistente. Por defecto se llama "Okay" por simplicidad (puedes decir "Okey" también). Por ejemplo: `Okay, abrir Netflix`
 
-    * Pedido encapsulado: Para mejorar el entendimiento, opcionalmente puedes decir su nombre por segunda vez en un mismo pedido. En este caso, el asistente interpretará que el pedido está en medio de la primera y la segunda vez que lo nombraste. Por ejemplo, si dices `bla bla bla Okey, abrir Netflix Okey bla bla bla`, el pedido será `abrir Netflix`
+    * Pedido encapsulado: Para mejorar el entendimiento, opcionalmente puedes decir su nombre por segunda vez en un mismo pedido. En este caso, el asistente interpretará que el pedido está en medio de la primera y la segunda vez que lo nombraste. Por ejemplo, si dices `bla bla bla Okay, abrir Netflix Okay bla bla bla`, el pedido será `abrir Netflix`
 
     * Te responde "no te entendí" cuando entendió mal o hiciste un pedido que no está dentro de los disponibles
 
@@ -63,14 +63,14 @@ Estoy consciente de que no estoy dejando documentación de las librerías utiliz
 | `cómo te llamás` | Te dice su nombre | Okay, ¿Cómo te llamás? | --- |
 | `tecla` X | Presiona la tecla solicitada | Okay, presioná la tecla P | --- |
 | `captura de pantalla` | Hace una captura de pantalla | Okay, sacá una captura de pantalla | Guarda la captura en la carpeta `capturas_de_pantalla` ubicada donde está el asistente |
-| `iniciá` / `detené` el `cronómetro` | Inicia o detiene un cronómetro | Okay, iniciá el cronómetro | Se reinicia si apagás al asistente |
+| `iniciá` / `detené` el `cronómetro` | Inicia o detiene un cronómetro | Okay, iniciá el cronómetro | --- |
 | `alarma`... `en` n `minutos` | Programa una alarma para dentro de n minutos | Okay, activá la alarma en 5 minutos | --- |
 | `nivel de humor` | Consulta el porcentaje de "humor" (5% por defecto) | Okay, decime tu nivel de humor | --- |
 | `humor`...`X%` | Cambia el nivel de humor al n%, siendo n un número entero entre 0 y 100. Se reestablece en 5% cada vez que se apaga al asistente | Okay, nivel de humor al 10% | --- |
 | `ayuda` | Te redirige a este readme para entender mejor al asistente | Okay, necesito ayuda | --- |
 | `ver código fuente` | Te redirige al código fuente del asistente | Okay, ver código fuente | --- |
 
-Tiene 3 activadores más pero solo están para aumentar la interactividad (`okey` a secas, `gracias` y `hola`)
+Tiene 3 activadores más pero solo están para aumentar la interactividad (`Okay` a secas, `gracias` y `hola`)
 
 ### Modificación 🛠️
 
@@ -83,7 +83,7 @@ Si eres programador y deseas modificar el asistente, considera que:
 * Una vez que estés conforme con tus cambios, coloca en la terminal el comando:
 
 ```
-pyinstaller --windowed --name "Asistente_virtual" --add-data "complementos;complementos" --add-data "scripts;scripts" --icon=complementos/icon.ico --add-data "asistente_virtual.py;." GUI.py
+pyinstaller --windowed --name "Asistente_virtual" --add-data "complementos;complementos" --add-data "scripts;scripts" --add-data "config.ini;." --icon=complementos/icon.ico --add-data "asistente_virtual.py;." GUI.py
 ```
 
 para compilar el proyecto en la carpeta dist. Asegúrate de haber eliminado (o vaciado) la carpeta dist antes de compilar para evitar errores imprevistos. Luego abre el archivo Asistente_virtual.exe ubicado en [dist/Asistente_virtual](dist/Asistente_virtual) y utiliza tu versión modificada!

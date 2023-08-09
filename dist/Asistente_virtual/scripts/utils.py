@@ -157,10 +157,10 @@ def volumen_al(rec: str, print_and_talk):
         pyautogui.press('volumeup', half_volume)
         print_and_talk(f'Volumen al {2*half_volume} por ciento') # Lo hago así sabiendo que el resultado siempre será par, ya que los botones mueven el valor de volumen de a dos unidades
 
-def cronometro(rec: str, cronometro: int, print_and_talk, humor: int):
+def cronometro(rec: str, cronometro: int, print_and_talk, humor: int, config):
     if any(keyword in rec for keyword in ['inicia', 'comenza', 'comienza']):
         print_and_talk('Iniciando cronómetro')
-        cronometro = time.time() # Registra el tiempo actual
+        cronometro = cambiar_valor(config, 'cronometro', time.time()) # Registra el tiempo actual
     else: # Cuando se detiene averigua cuánto tiempo pasó
         if cronometro == 0:
             print_and_talk('No puedes detener un cronómetro que no ha sido iniciado')
@@ -181,7 +181,7 @@ def cronometro(rec: str, cronometro: int, print_and_talk, humor: int):
             minutos_ = f'{minutos}' if minutos > 9 else f'0{minutos}'
             segundos_ = f'{segundos}' if segundos > 9 else f'0{segundos}'
             print_and_talk(f'Pasaron {horas_}:{minutos_}:{segundos_}')
-            cronometro = 0
+            cronometro = cambiar_valor(config, 'cronometro', 0)
     return cronometro
 
 def mixer_(rec: str, print_and_talk, cantidad = 1): # Reproduce sonidos pedidos en formato mp3 que estén en "direccion_m"
@@ -215,3 +215,9 @@ def eliminar_hasta_encontrar_alguna_frase(rec: str, frases: list[str]): # En cas
             rec = rec[rec.find(frase):]
             break
     return rec
+
+def cambiar_valor(config, clave: str, valor: str | int | float): # Modifica el valor de un dato en config.ini
+    config.set('Assistant', clave, str(valor))
+    with open('config.ini', 'w') as f:
+        config.write(f)  
+    return valor
