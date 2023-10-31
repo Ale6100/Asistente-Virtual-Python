@@ -1,5 +1,7 @@
 # Asistente virtual con Python
 
+**Importante**: Lamentablemente ahora sólo funciona en mi computadora, tengo que dedicarle un tiempo para que vuelva a funcionarle a todos.
+
 Bienvenido! este es mi primer asistente creado con Python. Hace un tiempo hice uno con JavaScript (https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
 
 Mi objetivo con este proyecto es lograr que el asistente sea lo suficientemente útil como para que desees utilizarlo a diaro, sabiendo que lo puedes dejar encendido en segundo plano para que esté listo en cualquier momento que lo necesites.
