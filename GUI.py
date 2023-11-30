@@ -1,155 +1,156 @@
+import configparser
 import tkinter as tk
 from tkinter import messagebox
-import webbrowser
 import subprocess
 import threading
+import webbrowser
 import scripts.direcciones_ as direcciones_
-import configparser
 
-config = configparser.ConfigParser()
-config.read('config.ini')
+class AssistantGUI:
+    def __init__(self):
+        self.config = configparser.ConfigParser()
+        self.config.read('config.ini')
+        self.name = self.config.get('Assistant', 'name', fallback='okay')
+        self.ventana_abierta = True # Es True si la interfaz gráfica de Tkinter se encuentra abierta
+        self.proceso = None
+        self.create_gui()
 
-name = config.get('Assistant', 'name', fallback='okay')
+    def create_gui(self):
+        self.root = tk.Tk()
+        self.root.title("Asistente Virtual")
+        self.root.iconbitmap('complementos/icon.ico')
 
-ventana_abierta = True # Es True si la interfaz gráfica de Tkinter se encuentra abierta
+        self.root.protocol("WM_DELETE_WINDOW", self.cerrar)
 
-def leer_salida(): # Lee la salidas (los prints en este caso) del subproceso correspondiente al asistente virtual y actualiza la interfaz gráfica según el valor de los prints
-    while True:
-        output = proceso.stdout.readline() # Lee la línea de la salida del subproceso
-        if output == '' and proceso.poll() is not None: break # Sale del bucle si output es una cadena vacía y si el subproceso ya no se está ejecutando
-        
-        if output:
-            msg = output.strip() # Elimina espacios al inicio y al final de la cadena
-            if not ventana_abierta: break # Si la ventana está cerrada, sale del bucle
-            
-            if "Detenido" in msg: # Actualiza la interfaz gráfica según el valor de los prints
-                toggle_botones('asistente_detenido')
-                label_iniciar.config(text='Presiona en "iniciar"')
-            elif "Escuchando..." in msg:
-                label_iniciar.config(text='Escuchando...')
-            elif 'Procesando...' in msg:
-                label_iniciar.config(text='Espere...')
-            elif 'Internet no detectado. Reintentando...' in msg:
-                label_iniciar.config(text='Internet no detectado. Reintentando...')
+        self.intro_label = tk.Label(self.root, text=f'Tu asistente se llama "{self.name}". Pídele algo')
+        self.intro_label.grid(row = 0, column = 0, columnspan = 6)
 
-def iniciar(): # Inicia el subproceso correspondiente al asistente virtual
-    label_iniciar.config(text='Iniciando. Espere...')
-    toggle_botones('asistente_iniciado')
-    global proceso
-    proceso = subprocess.Popen(['pythonw', 'asistente_virtual.py', 'iniciado'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True) # Ejecuta el subproceso en segundo plano
-    thread = threading.Thread(target=leer_salida) # Crea un hilo para leer la salida del subproceso
-    thread.start()
+        self.start_button = tk.Button(self.root, text="Iniciar asistente", command=self.iniciar)
+        self.start_button.grid(row= 1, column = 0, columnspan = 3)
 
-def detener(): # Detiene el subproceso correspondiente al asistente virtual
-    if 'proceso' in globals():
-        global proceso
-        if proceso:
-            proceso.terminate()
-            toggle_botones('asistente_detenido')
-            label_iniciar.config(text='Presiona en "Iniciar asistente"')
+        self.stop_button = tk.Button(self.root, text="Detener asistente", command=self.detener, state=tk.DISABLED)
+        self.stop_button.grid(row= 1, column = 3, columnspan = 3)
 
-def cambiar_valor(clave: str, valor: str | int | float):
-    config.set('Assistant', clave, valor)
-    with open('config.ini', 'w') as f:
-        config.write(f)    
+        self.label_msg_temp = tk.Label(self.root, text='')
+        self.label_msg_temp.grid(row= 2, column = 0, columnspan = 6)
 
-def guardar_nombre():
-    new_name = new_name_entry.get()
-    if new_name != '' and all(letter in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' for letter in new_name):
-        cambiar_valor('name', new_name)
-        new_name_entry['text'] = ''
-        label_error['text'] = ''
-        intro_label['text'] = f'Tu asistente se llama "{new_name}". Pídele algo'
-        new_name_entry.delete(0, tk.END)
-        set_msg_temp('Nombre modificado')
-    else:
-        label_error['text'] = 'Coloca un nombre válido'
-        
-def guardar_humor():
-    new_humor = new_humor_entry.get()
-    if new_humor != '' and all(letter in '1234567890' for letter in new_humor):
-        cambiar_valor('humor', new_humor)
-        new_humor_entry['text'] = ''
-        label_error['text'] = ''
-        new_humor_entry.delete(0, tk.END)
-        set_msg_temp('Nivel de humor modificado')
-    elif any(caracter in new_humor for caracter in ['%', '.', ',']):
-        label_error['text'] = 'Coloca un valor válido. Debe ser un número entero sin porcentaje'
-    else:
-        label_error['text'] = 'Coloca un valor válido'
+        self.label_iniciar = tk.Label(self.root, text='Presiona en "Iniciar asistente"')
+        self.label_iniciar.grid(row= 3, column = 0, columnspan = 6)
 
-def toggle_botones(estado): # Activa o desactiva los botones, dependiendo si el asistente está activo o no
-    if estado == 'asistente_iniciado':
-        start_button.config(state=tk.DISABLED)
-        stop_button.config(state=tk.NORMAL)
-        save_name_button.config(state=tk.DISABLED)
-        save_humor_button.config(state=tk.DISABLED)
-    elif estado == 'asistente_detenido':
-        start_button.config(state=tk.NORMAL)
-        stop_button.config(state=tk.DISABLED)
-        save_name_button.config(state=tk.NORMAL)
-        save_humor_button.config(state=tk.NORMAL)
+        self.label_error = tk.Label(self.root, text='', foreground='red')
+        self.label_error.grid(row= 4, column = 0, columnspan = 6)
 
-def set_msg_temp(msg): # Coloca un mensaje temporal 
-    label_msg_temp['text'] = msg
-    
-    def reset_value():
-        label_msg_temp['text'] = ''
-    
-    threading.Timer(5, lambda: reset_value()).start()
+        self.new_name_label = tk.Label(self.root, text='Cambiar nombre a:')
+        self.new_name_label.grid(row= 5, column = 0, columnspan = 2)
 
-# Interfaz
-root = tk.Tk()
-root.title("Asistente Virtual")
-root.geometry()
-root.iconbitmap('complementos/icon.ico') 
+        self.new_name_entry = tk.Entry(self.root)
+        self.new_name_entry.grid(row= 5, column = 2, columnspan = 2)
 
-def cerrar(): # Configurar la acción al cerrar la ventana
-    if messagebox.askokcancel("Cerrar", "¿Quieres cerrar el asistente?"):
-        detener()
-        root.destroy()
-        global ventana_abierta
-        ventana_abierta = False
+        self.save_name_button = tk.Button(self.root, text="Guardar", command=self.guardar_nombre)
+        self.save_name_button.grid(row= 5, column = 4, columnspan = 2)
 
-root.protocol("WM_DELETE_WINDOW", cerrar)
+        self.new_humor_label = tk.Label(self.root, text='Cambiar humor a:')
+        self.new_humor_label.grid(row= 6, column = 0, columnspan = 2)
 
-intro_label = tk.Label(root, text=f'Tu asistente se llama "{name}". Pídele algo')
-intro_label.grid(row = 0, column = 0, columnspan = 6)
+        self.new_humor_entry = tk.Entry(self.root)
+        self.new_humor_entry.grid(row= 6, column = 2, columnspan = 2)
 
-start_button = tk.Button(root, text="Iniciar asistente", command=iniciar)
-start_button.grid(row = 1, column = 0, columnspan = 3)
+        self.save_humor_button = tk.Button(self.root, text="Guardar", command=self.guardar_humor)
+        self.save_humor_button.grid(row= 6, column = 4, columnspan = 2)
 
-stop_button = tk.Button(root, text="Detener asistente", command=detener, state=tk.DISABLED)
-stop_button.grid(row = 1, column = 3, columnspan = 3)
+        self.help_button = tk.Button(self.root, text="Ayuda", command=lambda: webbrowser.open(direcciones_.direcciones["codigofuente"]["url"]))
+        self.help_button.grid(row= 7, column = 0, columnspan = 6)
 
-label_msg_temp = tk.Label(root, text='')
-label_msg_temp.grid(row = 2, column = 0, columnspan = 6)
+        self.root.mainloop()
 
-label_iniciar = tk.Label(root, text='Presiona en "iniciar asistente"')
-label_iniciar.grid(row = 3, column = 0, columnspan = 6)
+    def cerrar(self): # Configurar la acción al cerrar la ventana
+        if messagebox.askokcancel("Cerrar", "¿Quieres cerrar el asistente?"):
+            self.detener()
+            self.root.destroy()
+            self.ventana_abierta = False
 
-label_error = tk.Label(root, text='', foreground='red')
-label_error.grid(row = 4, column = 0, columnspan = 6)
+    def leer_salida(self): # Lee la salidas (los prints en este caso) del subproceso correspondiente al asistente virtual y actualiza la interfaz gráfica según el valor de los prints
+        while True:
+            output = self.proceso.stdout.readline() # Lee la línea de la salida del subproceso
+            if output == '' and self.proceso.poll() is not None: # Sale del bucle si output es una cadena vacía y si el subproceso ya no se está ejecutando
+                break
 
-new_name_label = tk.Label(root, text='Cambiar nombre a:')
-new_name_label.grid(row = 5, column = 0, columnspan = 2)
+            if output:
+                msg = output.strip() # Elimina espacios al inicio y al final de la cadena
+                if not self.ventana_abierta: # Si la ventana está cerrada, sale del bucle
+                    break
 
-new_name_entry = tk.Entry(root)
-new_name_entry.grid(row = 5, column = 2, columnspan = 2)
+                if "Detenido" in msg: # Actualiza la interfaz gráfica según el valor de los prints
+                    self.toggle_botones('asistente_detenido')
+                    self.label_iniciar.config(text='Presiona en "iniciar"')
+                elif "Escuchando..." in msg:
+                    self.label_iniciar.config(text='Escuchando...')
+                elif 'Procesando...' in msg:
+                    self.label_iniciar.config(text='Espere...')
+                elif 'Internet no detectado. Reintentando...' in msg:
+                    self.label_iniciar.config(text='Internet no detectado. Reintentando...')
 
-save_name_button = tk.Button(root, text="Guardar", command=guardar_nombre)
-save_name_button.grid(row = 5, column = 4, columnspan = 2)
+    def iniciar(self): # Inicia el subproceso correspondiente al asistente virtual
+        self.label_iniciar.config(text='Iniciando. Espere...')
+        self.toggle_botones('asistente_iniciado')
+        self.proceso = subprocess.Popen(['.venv\\Scripts\\pythonw', 'asistente_virtual.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+        thread = threading.Thread(target=self.leer_salida) # Crea un hilo para leer la salida del subproceso
+        thread.start()
 
-new_humor_label = tk.Label(root, text='Cambiar humor a:')
-new_humor_label.grid(row = 6, column = 0, columnspan = 2)
 
-new_humor_entry = tk.Entry(root)
-new_humor_entry.grid(row = 6, column = 2, columnspan = 2)
+    def detener(self): # Detiene el subproceso correspondiente al asistente virtual
+        if self.proceso:
+            self.proceso.terminate()
+            self.toggle_botones('asistente_detenido')
+            self.label_iniciar.config(text='Presiona en "Iniciar asistente"')
 
-save_humor_button = tk.Button(root, text="Guardar", command=guardar_humor)
-save_humor_button.grid(row = 6, column = 4, columnspan = 2)
+    def cambiar_valor(self, clave: str, valor: str | int | float):
+        self.config.set('Assistant', clave, valor)
+        with open('config.ini', 'w') as f:
+            self.config.write(f)
 
-help_button = tk.Button(root, text="Ayuda", command=lambda: webbrowser.open(direcciones_.direcciones["codigofuente"]["url"]))
-help_button.grid(row = 7, column = 0, columnspan = 6)
+    def guardar_nombre(self):
+        new_name = self.new_name_entry.get()
+        if new_name != '' and all(letter.isalpha() for letter in new_name):
+            self.cambiar_valor('name', new_name)
+            self.new_name_entry['text'] = ''
+            self.label_error['text'] = ''
+            self.intro_label['text'] = f'Tu asistente se llama "{new_name}". Pídele algo'
+            self.new_name_entry.delete(0, tk.END)
+            self.set_msg_temp('Nombre modificado')
+        else:
+            self.label_error['text'] = 'Coloca un nombre válido'
 
-root.mainloop()
+    def guardar_humor(self):
+        new_humor = self.new_humor_entry.get()
+        if new_humor != '' and new_humor.isnumeric():
+            self.cambiar_valor('humor', new_humor)
+            self.new_humor_entry['text'] = ''
+            self.label_error['text'] = ''            
+            self.new_humor_entry.delete(0, tk.END)
+            self.set_msg_temp(f'Nivel de humor al {new_humor}%')
+        else:
+            self.label_error['text'] = 'Coloca un valor válido'
+
+    def toggle_botones(self, estado): # Activa o desactiva los botones, dependiendo si el asistente está activo o no
+        if estado == 'asistente_iniciado':
+            self.start_button.config(state=tk.DISABLED)
+            self.stop_button.config(state=tk.NORMAL)
+            self.save_name_button.config(state=tk.DISABLED)
+            self.save_humor_button.config(state=tk.DISABLED)
+        elif estado == 'asistente_detenido':
+            self.start_button.config(state=tk.NORMAL)
+            self.stop_button.config(state=tk.DISABLED)
+            self.save_name_button.config(state=tk.NORMAL)
+            self.save_humor_button.config(state=tk.NORMAL)
+
+    def set_msg_temp(self, msg): # Coloca un mensaje temporal
+        self.label_msg_temp['text'] = msg
+
+        def reset_value():
+            self.label_msg_temp['text'] = ''
+
+        threading.Timer(5, lambda: reset_value()).start()
+
+if __name__ == "__main__":
+    app = AssistantGUI()

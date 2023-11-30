@@ -1,0 +1,9 @@
+.venv
+
+scripts/__pycache__
+__pycache__
+
+capturas_de_pantalla/**
+build
+
+test.py
