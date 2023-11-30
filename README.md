@@ -1,5 +1,4 @@
 # Asistente virtual con Python
-
 Bienvenido! Este proyecto está en una etapa de transición importante. Estoy corrigiéndolo (incluyendo este readme), usando mejores prácticas y haciendo posible que otros usuarios que no tengan python también puedan usarlo. Por ahora no está listo, pero puedes ver la vieja versión en la carpeta [proyecto_viejo](./proyecto_viejo).
 
 ## Descarga ⬇️
