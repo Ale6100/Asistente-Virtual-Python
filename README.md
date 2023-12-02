@@ -23,7 +23,6 @@ luego actívalo con el comando
 .venv\Scripts\activate
 ```
 
-
 A continuación, instala las dependencias con el comando
 ```
 pip install -r requirements.txt
