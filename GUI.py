@@ -97,7 +97,6 @@ class AssistantGUI:
         thread = threading.Thread(target=self.leer_salida) # Crea un hilo para leer la salida del subproceso
         thread.start()
 
-
     def detener(self): # Detiene el subproceso correspondiente al asistente virtual
         if self.proceso:
             self.proceso.terminate()
