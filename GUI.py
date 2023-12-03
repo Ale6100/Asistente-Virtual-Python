@@ -5,6 +5,7 @@ import subprocess
 import threading
 import webbrowser
 import scripts.direcciones_ as direcciones_
+import sys
 
 class AssistantGUI:
     def __init__(self):
@@ -93,10 +94,7 @@ class AssistantGUI:
     def iniciar(self): # Inicia el subproceso correspondiente al asistente virtual
         self.label_iniciar.config(text='Iniciando. Espere...')
         self.toggle_botones('asistente_iniciado')
-        try:
-            self.proceso = subprocess.Popen(['.venv\\Scripts\\pythonw', 'asistente_virtual.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
-        except:
-            self.proceso = subprocess.Popen(['pythonw', 'asistente_virtual.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+        self.proceso = subprocess.Popen([sys.executable, 'asistente_virtual.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True) 
         thread = threading.Thread(target=self.leer_salida) # Crea un hilo para leer la salida del subproceso
         thread.start()
 
