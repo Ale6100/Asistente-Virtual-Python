@@ -93,7 +93,10 @@ class AssistantGUI:
     def iniciar(self): # Inicia el subproceso correspondiente al asistente virtual
         self.label_iniciar.config(text='Iniciando. Espere...')
         self.toggle_botones('asistente_iniciado')
-        self.proceso = subprocess.Popen(['.venv\\Scripts\\pythonw', 'asistente_virtual.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+        try:
+            self.proceso = subprocess.Popen(['.venv\\Scripts\\pythonw', 'asistente_virtual.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+        except:
+            self.proceso = subprocess.Popen(['pythonw', 'asistente_virtual.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
         thread = threading.Thread(target=self.leer_salida) # Crea un hilo para leer la salida del subproceso
         thread.start()
 

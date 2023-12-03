@@ -266,7 +266,6 @@ class AssistantApp:
                 pyinstaller --noconsole --name "{nombreAsistente}" --icon=complementos/icon.ico --contents-directory . \
                 --add-data "complementos;complementos" \
                 --add-data "scripts;scripts" \
-                --add-data ".venv;.venv" \
                 --add-data "config.ini;." \
                 --add-data "asistente_virtual.py;." \
                 GUI.py') # Esta línea crea el nuevo archivo ejecutable
