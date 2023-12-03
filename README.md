@@ -1,14 +1,13 @@
 # Asistente virtual con Python
-Bienvenido! Este proyecto está en una etapa de transición importante. Estoy corrigiéndolo (incluyendo este readme), usando mejores prácticas y haciendo posible que otros usuarios que no tengan python también puedan usarlo. Por ahora no está listo, pero puedes ver la vieja versión en la carpeta [proyecto_viejo](./proyecto_viejo).
+Bienvenido! este es mi primer asistente creado con Python. Hace un tiempo hice uno con JavaScript (https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
 
----
+Mi objetivo con este proyecto es lograr que el asistente sea lo suficientemente útil como para que desees utilizarlo a diaro, sabiendo que lo puedes dejar encendido en segundo plano para que esté listo en cualquier momento que lo necesites.
 
 `Importante`: El asistente ha sido testeado en un entorno con Windows 11 de 64 bits, no puedo garantizar su correcto funcionamiento en otros casos.
 
 ## Guía para usuarios 🧑‍💻
 ### Descarga ⬇️
 Si deseas obtener una copia local del asistente listo para usar, haz click [aquí](https://github.com/Ale6100/Asistente-Virtual-Python/raw/main/Asistente_virtual.rar). Te descargará una capreta comprimida en formato `.rar` llamada "Asistente_virtual" que tendrás que descomprimir. 
-
 
 ### Uso 📝
 1. Abre el archivo ejecutable Asistente_virtual dentro de la carpeta con su mismo nombre
@@ -38,7 +37,7 @@ Si deseas obtener una copia local del asistente listo para usar, haz click [aqu�
 | :--- | :--- | :--- | :--- |
 | `basta` | Apaga al asistente | Okay, basta | --- |
 | `cancelar` | Cancela el pedido que estás solicitando | Okay, abrir YouTube. No, cancelar | La palabra `cancelar` debe decirse al final |
-| `en` n `minutos` | Programa la ejecución de otro pedido para dentro de n minutos | Okay, abrir Netflix en tres minutos | `minutos` debe decirse al final, y "n" debe ser un número natural |
+| ... `en` n `minutos` | Programa la ejecución de otro pedido para dentro de n minutos | Okay, abrir Netflix en tres minutos | `minutos` debe decirse al final, y "n" debe ser un número natural |
 | `buscar` X `en` Y | Busca en el sitio Y lo que le pediste (X) | Okay, buscar "Mercado Libre" en Linkedin | Debe invocarse siguiendo el patrón mencionado. Sólo funciona en sitios preconfigurados |
 | `escribir` | Escribe lo que quieras sin símbolos y en minúsculas | Okay, escribir "comprar salsa de tomate" | --- |
 | `repetí` | Repite lo que quieras | Okay, repetí "hola me llamo Esteban" | --- |
@@ -65,6 +64,15 @@ Si deseas obtener una copia local del asistente listo para usar, haz click [aqu�
 | `ver código fuente` | Te redirige al código fuente del asistente | Okay, ver código fuente | --- |
 
 Tiene 3 activadores más pero solo están para aumentar la interactividad (`Okay` a secas, `gracias` y `hola`)
+
+### Limitaciones 🚨
+1. Está hecho para ser utilizado en windows
+
+2. A la hora de hacer un pedido debes ser claro y conciso, sin pausas
+
+3. Se necesita conexión activa a internet para que funcione el reconocedor de voz. En caso de que se desconecte, tratará de reconectarse un par de veces
+
+4. Existe una alta posibilidad de que el asistente deje de funcionar si suspendes la computadora y la vuelves a encender. En caso de que esto ocurra, simplemente ciérralo y vuelve a abrirlo,
 
 ## Guía para programadores 👨‍💻
 

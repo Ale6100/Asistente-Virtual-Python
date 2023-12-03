@@ -6,14 +6,16 @@ import webbrowser
 import scripts.direcciones_ as direcciones_
 from multiprocessing import Queue
 from scripts.asistente_virtual import AssistantApp
+import os
+import signal
 
 class AssistantGUI:
     def __init__(self):
         self.config = configparser.ConfigParser()
         self.config.read('config.ini')
         self.name = self.config.get('Assistant', 'name', fallback='okay')
-        self.stop_event = None
         self.q = Queue()
+        self.stop_event = None
         self.window_open = True
         self.create_gui()
 
@@ -22,7 +24,7 @@ class AssistantGUI:
         self.root.title("Asistente Virtual")
         self.root.iconbitmap('complementos/icon.ico')
 
-        self.root.protocol("WM_DELETE_WINDOW", self.cerrar)
+        self.root.protocol("WM_DELETE_WINDOW", self.close_window)
 
         self.intro_label = tk.Label(self.root, text=f'Tu asistente se llama "{self.name}". Pídele algo')
         self.intro_label.grid(row = 0, column = 0, columnspan = 6)
@@ -65,28 +67,6 @@ class AssistantGUI:
 
         self.root.mainloop()
 
-    def cerrar(self): # Configurar la acción al cerrar la ventana
-        if messagebox.askokcancel("Cerrar", "¿Quieres cerrar el asistente?"):
-            self.detener()
-            self.window_open = False
-            self.root.destroy()
-
-    def leer_salida(self): # Lee los mensajes enviados por el hilo correspondiente al asistente virtual y actualiza la interfaz gráfica según los valores
-        while self.window_open:
-            msg = self.q.get().strip()
-            if not self.window_open: break
-
-            if "Detenido" in msg:
-                self.toggle_botones('asistente_detenido')
-                self.label_iniciar.config(text='Presiona en "Iniciar asistente"')
-                self.label_msg_temp['text'] = ''
-            elif "Escuchando..." in msg:
-                self.label_iniciar.config(text='Escuchando...')
-            elif 'Procesando...' in msg:
-                self.label_iniciar.config(text='Espere...')
-            elif 'Internet no detectado. Reintentando...' in msg:
-                self.label_iniciar.config(text='Internet no detectado. Reintentando...')
-
     def iniciar(self): # Inicia los hilos correspondientes al asistente virtual y al lector de mensajes
         self.label_iniciar.config(text='Iniciando. Espere...')
         self.toggle_botones('asistente_iniciado')
@@ -96,11 +76,37 @@ class AssistantGUI:
         threading.Thread(target=AssistantApp, args=(self.q, self.stop_event)).start() # En self.stop_event se almacena una señal que le dice a ambos hilos cuándo deben detenerse
         threading.Thread(target=self.leer_salida).start()
 
-    def detener(self): # Detiene el subproceso correspondiente al asistente virtual
+    def leer_salida(self): # Lee los mensajes enviados por el hilo correspondiente al asistente virtual y actualiza la interfaz gráfica según los valores
+        while True: # Podría poner la condición "and not self.stop_event.is_set()", pero como el cierre no es inmediato, cuando esa condición se cumple en realidad todavía puede haber algún último mensaje que falte enviar
+            msg = self.q.get().strip()
+            if not self.window_open: break # Recordemos que el código se para hasta que se recibe un mensaje desde el get(), por eso el condicional está acá y no en el del propio while
+
+            if "Detenido" in msg:
+                self.toggle_botones('asistente_detenido')
+                self.label_iniciar.config(text='Presiona en "Iniciar asistente"')
+                self.label_msg_temp['text'] = ''
+                break
+            elif "Escuchando..." in msg:
+                self.label_iniciar.config(text='Escuchando...')
+            elif 'Procesando...' in msg:
+                self.label_iniciar.config(text='Espere...')
+            elif 'Internet no detectado. Reintentando...' in msg:
+                self.label_iniciar.config(text='Internet no detectado. Reintentando...')
+
+    def detener(self): # Envía una señal al hilo del asistente virtual para que se pare cuando pueda (no es automático ya que no se recomienda forzarlo)
         if self.stop_event is not None and not self.stop_event.is_set():
             self.stop_event.set()
             self.stop_button.config(state=tk.DISABLED)
-            self.label_msg_temp['text'] = 'Analizando último pedido y deteniendo...'
+            self.label_msg_temp['text'] = 'Escuchando el último pedido y deteniendo...'
+    
+    def close_window(self): # Configurar la acción al cerrar la ventana
+        if messagebox.askokcancel("Cerrar", "¿Quieres cerrar el asistente?"):
+            self.detener()
+            self.window_open = False
+            self.root.destroy()
+            os.kill(os.getpid(), signal.SIGTERM)
+
+    #? ----- métodos auxiliares -----
 
     def cambiar_valor(self, clave: str, valor: str | int | float):
         self.config.set('Assistant', clave, valor)
@@ -130,6 +136,14 @@ class AssistantGUI:
         else:
             self.label_error['text'] = 'Coloca un valor válido'
 
+    def set_msg_temp(self, msg): # Coloca un mensaje temporal
+        self.label_msg_temp['text'] = msg
+
+        def reset_value():
+            self.label_msg_temp['text'] = ''
+
+        threading.Timer(5, lambda: reset_value()).start()
+
     def toggle_botones(self, estado): # Activa o desactiva los botones, dependiendo si el asistente está activo o no
         if estado == 'asistente_iniciado':
             self.start_button.config(state=tk.DISABLED)
@@ -141,14 +155,6 @@ class AssistantGUI:
             self.stop_button.config(state=tk.DISABLED)
             self.save_name_button.config(state=tk.NORMAL)
             self.save_humor_button.config(state=tk.NORMAL)
-
-    def set_msg_temp(self, msg): # Coloca un mensaje temporal
-        self.label_msg_temp['text'] = msg
-
-        def reset_value():
-            self.label_msg_temp['text'] = ''
-
-        threading.Timer(5, lambda: reset_value()).start()
 
 if __name__ == "__main__":
     app = AssistantGUI()

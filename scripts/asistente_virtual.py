@@ -44,7 +44,7 @@ class AssistantApp:
 
     #! Configuramos los mensajes en la consola y la salida de audio
     def print_(self, text: str):
-        print(text) # El flush es para que se vacíe el búfer de salida estándar después de cada print para que los prints se envíen al proceso padre (correspondiente al GUI.py) en tiempo real
+        print(text)
         self.q.put(text)
 
     def print_and_talk(self, text: str): # El asistente imprime el texto pasado como argumento y lo reproduce
