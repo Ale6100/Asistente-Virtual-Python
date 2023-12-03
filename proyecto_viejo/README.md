@@ -30,7 +30,7 @@ Estoy consciente de que no estoy dejando documentación de las librerías utiliz
 
 4. Hazle un pedido! Considera que:
 
-    * Todas los pedidos deben iniciar con el nombre del asistente. Por defecto se llama "Okay" por simplicidad (puedes decir "Okey" también). Por ejemplo: `Okay, abrir Twitter`
+    * Todas los pedidos deben iniciar con el nombre del asistente. Por defecto se llama "Okay" por simplicidad (puedes decir "Okey" también, ya que lo interpreta como "Okay"). Por ejemplo: `Okay, abrir Twitter`
 
     * Pedido encapsulado: Para mejorar el entendimiento, opcionalmente puedes decir su nombre por segunda vez en un mismo pedido. En este caso, el asistente interpretará que el pedido está en medio de la primera y la segunda vez que lo nombraste. Por ejemplo, si dices `bla bla bla Okay, abrir Twitter Okay bla bla bla`, el pedido será `abrir Twitter`
 
@@ -78,12 +78,16 @@ Si eres programador y deseas modificar el asistente, considera que:
 
 * La carpeta dist se genera automáticamente a la hora de compilar el proyecto entero. El código central está repartido entre los archivos [asistente_virtual.py](asistente_virtual.py) (asistente) y [GUI.py](GUI.py) (interfaz gráfica). Los scripts de apoyo están en la carpeta `scripts`, mientras que los recursos complementarios están en la carpeta `complementos`
 
-* Podrás iniciar el asistente ejecutando `asistente_virtual.py` o `GUI.py`, considera que esta última opción te proporciona la interfaz gráfica pero no podrás ver la consola
+* Podrás iniciar el asistente ejecutando [GUI.py](GUI.py)
 
 * Una vez que estés conforme con tus cambios, coloca en la terminal el comando:
 
 ```
-pyinstaller --windowed --name "Asistente_virtual" --add-data "complementos;complementos" --add-data "scripts;scripts" --add-data "config.ini;." --icon=complementos/icon.ico --add-data "asistente_virtual.py;." GUI.py
+pyinstaller --noconsole --name "{nombreAsistente}" --icon=complementos/icon.ico --contents-directory . \
+                --add-data "complementos;complementos" \
+                --add-data "scripts;scripts" \
+                --add-data "config.ini;." \
+                GUI.py
 ```
 
 para compilar el proyecto en la carpeta dist. Asegúrate de haber eliminado (o vaciado) la carpeta dist antes de compilar para evitar errores imprevistos. Luego abre el archivo Asistente_virtual.exe ubicado en [dist/Asistente_virtual](dist/Asistente_virtual) y utiliza tu versión modificada!

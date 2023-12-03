@@ -3,8 +3,6 @@ import scripts.direcciones_ as direcciones_
 import pyautogui
 import time
 import os
-import pkg_resources
-import importlib.util
 import time
 import numpy as np
 import os
@@ -13,7 +11,6 @@ from pygame import mixer
 import random
 import scripts.frases_a_filtrar as frasesAFiltrar
 
-asistente_virtual_name = importlib.util.resolve_name('asistente_virtual', package=None)
 direcciones = direcciones_.direcciones
 dir_mixer = direcciones_.dir_mixer
 
@@ -189,7 +186,7 @@ def mixer_(rec: str, print_and_talk, cantidad = 1): # Reproduce sonidos pedidos 
         for i in dir_mixer:
             if i in rec:
                 mixer.init()
-                mixer.music.load(pkg_resources.resource_filename(asistente_virtual_name, f"/complementos/audio/{dir_mixer[i]['nombre']}.mp3"))
+                mixer.music.load(f"./complementos/audio/{dir_mixer[i]['nombre']}.mp3")
                 mixer.music.set_volume(dir_mixer[i]['volumen'])
                 mixer.music.play(cantidad) # mixer.music.play(n) suena n veces
                 break
