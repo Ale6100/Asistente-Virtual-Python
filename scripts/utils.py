@@ -165,7 +165,10 @@ def cronometro(rec: str, cronometro: int, print_and_talk, humor: int, config):
         else:
             tiempo_pasado = round(time.time() - cronometro) # Tiempo pasado en segundos
 
-            horas_sr = tiempo_pasado/60/60
+            dias_sr = tiempo_pasado/60/60/24 # el _sr significa que es el valor real
+            dias = int(np.floor(dias_sr))
+
+            horas_sr = (dias_sr - dias)*24
             horas = int(np.floor(horas_sr)) # Horas pasadas
 
             minutos_sr = (horas_sr - horas)*60
@@ -174,10 +177,22 @@ def cronometro(rec: str, cronometro: int, print_and_talk, humor: int, config):
             segundos_sr = (minutos_sr - minutos)*60
             segundos = int(np.round(segundos_sr))
 
-            horas_ = f'{horas}' if horas > 9 else f'0{horas}' # Agregamos ceros de ser necesario, ya que se necesita un formato xx:xx:xx
-            minutos_ = f'{minutos}' if minutos > 9 else f'0{minutos}'
-            segundos_ = f'{segundos}' if segundos > 9 else f'0{segundos}'
-            print_and_talk(f'Pasaron {horas_}:{minutos_}:{segundos_}')
+            string_res = 'Pasaron '
+            if dias != 0:
+                string_res += f'{dias} días '
+
+            if horas != 0:
+                string_res += f'{horas} horas '
+
+            if minutos != 0:
+                string_res += f'{minutos} minutos '
+
+            if segundos != 0:
+                if horas != 0 or minutos != 0 or dias != 0:
+                    string_res += f'y {segundos} segundos'
+                else:
+                    string_res += f'{segundos} segundos'
+            print_and_talk(string_res)
             cronometro = cambiar_valor(config, 'cronometro', 0)
     return cronometro
 

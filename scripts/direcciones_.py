@@ -160,6 +160,10 @@ direcciones = {
     'chatgpt': {
         'sitios': ['chat gpt'],
         'url': 'https://chat.openai.com/',
+    },
+    'notas': {
+        'sitios': ['nota'],
+        'url': 'https://lista-de-notas.netlify.app',
     }
 }
 

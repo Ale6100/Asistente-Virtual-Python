@@ -126,15 +126,17 @@ class AssistantGUI:
             self.label_error['text'] = 'Coloca un nombre válido'
 
     def guardar_humor(self):
-        new_humor = self.new_humor_entry.get()
-        if new_humor != '' and new_humor.isnumeric():
+        new_humor = self.new_humor_entry.get().strip()
+        if new_humor == '' or not new_humor.isnumeric():
+            self.label_error['text'] = 'Coloca un valor válido'
+        elif int(new_humor) < 0 or int(new_humor) > 100:
+            self.label_error['text'] = 'El nivel de humor debe estar entre 0 y 100'
+        else:
             self.cambiar_valor('humor', new_humor)
             self.new_humor_entry['text'] = ''
             self.label_error['text'] = ''
             self.new_humor_entry.delete(0, tk.END)
             self.set_msg_temp(f'Nivel de humor al {new_humor}%')
-        else:
-            self.label_error['text'] = 'Coloca un valor válido'
 
     def set_msg_temp(self, msg): # Coloca un mensaje temporal
         self.label_msg_temp['text'] = msg

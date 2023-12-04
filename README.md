@@ -37,7 +37,7 @@ Si deseas obtener una copia local del asistente listo para usar, haz click [aqu�
 | :--- | :--- | :--- | :--- |
 | `basta` | Apaga al asistente | Okay, basta | --- |
 | `cancelar` | Cancela el pedido que estás solicitando | Okay, abrir YouTube. No, cancelar | La palabra `cancelar` debe decirse al final |
-| ... `en` n `minutos` | Programa la ejecución de otro pedido para dentro de n minutos | Okay, abrir Netflix en tres minutos | `minutos` debe decirse al final, y "n" debe ser un número natural |
+| `en` n `minutos` | Programa la ejecución de otro pedido para dentro de n minutos | Okay, abrir Netflix en tres minutos | `minutos` debe decirse al final, y "n" debe ser un número natural |
 | `buscar` X `en` Y | Busca en el sitio Y lo que le pediste (X) | Okay, buscar "Mercado Libre" en Linkedin | Debe invocarse siguiendo el patrón mencionado. Sólo funciona en sitios preconfigurados |
 | `escribir` | Escribe lo que quieras sin símbolos y en minúsculas | Okay, escribir "comprar salsa de tomate" | --- |
 | `repetí` | Repite lo que quieras | Okay, repetí "hola me llamo Esteban" | --- |
@@ -46,7 +46,7 @@ Si deseas obtener una copia local del asistente listo para usar, haz click [aqu�
 | `fecha` | Consultar la fecha | Okay, ¿qué fecha es hoy? | --- |
 | `atajo` n | Abre el n-ésimo programa disponible de la barra de tareas | Okay, atajo 1 | `n` debe ser un número natural entre 1 y 9. No lo abrirá si no lo tenés disponible |
 | `abre` X | Abre el sitio X | Okay, abre Twitter | Sólo funciona en sitios preconfigurados |
-| `reproduce musica` | Abre una lista de reproducción | Okay, reproduce música | La lista de reproducción debe estar en C:/Users/{usuario}/Music/av/musica.xspf |
+| `reproduce musica` | Setea el volumen al 20% y abre una lista de reproducción | Okay, reproduce música | La lista de reproducción debe estar en C:/Users/{usuario}/Music/av/musica.xspf |
 | `cerrar` X `archivo` | Cierra el programa actual | Okay, cerrar archivo | --- |
 | `mute` | Activa/desactiva el mute | Okay, mute | --- |
 | `minimizar todo` | Minimiza todos los programas | Okay, minimizar todo | --- |
