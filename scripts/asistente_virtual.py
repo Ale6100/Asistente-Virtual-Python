@@ -234,7 +234,7 @@ class AssistantApp:
             screenshot.save(f'{carpeta_contenedora}/{now}_screenshot.png')
             self.print_and_talk('Captura guardada')
 
-        elif 'cronometro' in rec and any(word in rec for word in ['inicia', 'comenza', 'comienza']) or any(word in rec for word in ['para', 'deten']):
+        elif 'cronometro' in rec and any(word in rec for word in ['inicia', 'comenza', 'comienza', 'para', 'deten']):
             self.cronometro = utils.cronometro(rec, self.cronometro, self.print_and_talk, self.humor, self.config)
 
         elif 'alarma' in rec: utils.mixer_(rec, self.print_and_talk)
