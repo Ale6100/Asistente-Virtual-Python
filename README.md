@@ -72,7 +72,7 @@ Tiene 3 activadores más pero solo están para aumentar la interactividad (`Okay
 
 3. Se necesita conexión activa a internet para que funcione el reconocedor de voz. En caso de que se desconecte, tratará de reconectarse un par de veces
 
-4. Existe una alta posibilidad de que el asistente deje de funcionar si suspendes la computadora y la vuelves a encender. En caso de que esto ocurra, simplemente ciérralo y vuelve a abrirlo,
+4. Si suspendés la computadora y la volvés a encender, el asistente dejará de funcionar como máximo 60 segudos, luego volverá a estar disponible (esta característica aún la estoy testeando, pero parece funcionar)
 
 ## Guía para programadores 👨‍💻
 

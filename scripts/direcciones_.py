@@ -11,13 +11,13 @@ direcciones = {
     'google': {
         'sitios': ['Google', 'el buscador', 'navegador'],
         'url': 'https://www.google.com.ar/',
-        'buscador': 'https://www.google.com.ar/search?q='        
+        'buscador': 'https://www.google.com.ar/search?q='
     },
     'youtube': {
         'sitios': ['Youtube'],
         'url': 'https://www.youtube.com/',
-        'buscador': 'https://www.youtube.com/results?search_query='  
-    }, 
+        'buscador': 'https://www.youtube.com/results?search_query='
+    },
     'steam': {
         'sitios': ['Steam', 'Stim'],
         'url': 'https://store.steampowered.com/',
@@ -41,7 +41,7 @@ direcciones = {
     'mercadolibre': {
         'sitios': ['MercadoLibre', 'Mercado Libre'],
         'url': 'https://www.mercadolibre.com.ar/',
-        'buscador': 'https://listado.mercadolibre.com.ar/' 
+        'buscador': 'https://listado.mercadolibre.com.ar/'
     },
     'linkedin': {
         'sitios': ['LinKedIn'],
@@ -67,7 +67,7 @@ direcciones = {
         'sitios': ['zoom'],
         'url': 'https://zoom.us/',
         'buscador': 'https://explore.zoom.us/es/search/#q='
-    },    
+    },
     'amazon': {
         'sitios': ['Amazon'],
         'url': 'https://www.amazon.com/',
@@ -135,27 +135,27 @@ direcciones = {
     },
     'canciones': {
         'sitios': ['canciones', 'musica', 'lista de reproduccion'],
-        'url': f'C:/Users/{usuario}/Music/av/musica.xspf',        
+        'url': f'C:/Users/{usuario}/Music/av/musica.xspf',
     },
     'word': {
         'sitios': ['word'],
-        'url': 'https://www.microsoft365.com/launch/word',        
+        'url': 'https://www.microsoft365.com/launch/word',
     },
     'excel': {
         'sitios': ['excel'],
-        'url': 'https://www.microsoft365.com/launch/excel',        
+        'url': 'https://www.microsoft365.com/launch/excel',
     },
     'powerpoint': {
         'sitios': ['powerpoint'],
-        'url': 'https://www.microsoft365.com/launch/powerpoint',        
+        'url': 'https://www.microsoft365.com/launch/powerpoint',
     },
     'outlook': {
         'sitios': ['outlook'],
-        'url': 'https://office.live.com/start/Outlook.aspx',        
+        'url': 'https://office.live.com/start/Outlook.aspx',
     },
     'gmail': {
         'sitios': ['gmail'],
-        'url': 'https://mail.google.com/',        
+        'url': 'https://mail.google.com/',
     },
     'chatgpt': {
         'sitios': ['chat gpt'],
@@ -223,5 +223,5 @@ dir_mixer = {
     'es_bellisimo': {
         'nombre': 'es_bellisimo',
         'volumen': 1
-    }                          
+    }
 }

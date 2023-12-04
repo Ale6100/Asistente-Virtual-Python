@@ -98,7 +98,7 @@ class AssistantGUI:
             self.stop_event.set()
             self.stop_button.config(state=tk.DISABLED)
             self.label_msg_temp['text'] = 'Escuchando el último pedido y deteniendo...'
-    
+
     def close_window(self): # Configurar la acción al cerrar la ventana
         if messagebox.askokcancel("Cerrar", "¿Quieres cerrar el asistente?"):
             self.detener()
@@ -130,7 +130,7 @@ class AssistantGUI:
         if new_humor != '' and new_humor.isnumeric():
             self.cambiar_valor('humor', new_humor)
             self.new_humor_entry['text'] = ''
-            self.label_error['text'] = ''            
+            self.label_error['text'] = ''
             self.new_humor_entry.delete(0, tk.END)
             self.set_msg_temp(f'Nivel de humor al {new_humor}%')
         else:

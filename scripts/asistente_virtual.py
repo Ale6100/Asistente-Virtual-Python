@@ -71,7 +71,7 @@ class AssistantApp:
             rec = rec[index_first_name+len(self.name) : index_second_name].strip() # Se quedará únicamente con lo que dijo en medio
         else:
             rec = rec[index_first_name+len(self.name):].strip() # Recorta la grabación hasta el momento donde se dice el nombre
-        self.pedidos(rec) # Ejecuta el pedido        
+        self.pedidos(rec) # Ejecuta el pedido
 
     def listen(self): # Se repite el while hasta que detecte que se llamó al asistente por su nombre o hasta que de error
         while True:
@@ -88,9 +88,11 @@ class AssistantApp:
                 listener = sr.Recognizer()
                 listener.adjust_for_ambient_noise(source, duration = 1) # Ajusta el nivel de ruido ambiental. Duration son los segundos que tarda en ajustar el ruido ambiental
                 self.print_(f'\n{self.intentos}) Escuchando...')
-                voice = listener.listen(source, timeout=10) # Acá comienza a escuchar. Tiene una tolerancia máxima de 10 segundos de no escuchar nada. Sirve para tratar de evitar que la grabación se trabe por estar encendida mucho tiempo
+                # Acá comienza a escuchar, tiene una tolerancia máxima de 10 segundos de no escuchar nada. Sirve para tratar de evitar que la grabación se trabe por estar encendida mucho tiempo.
+                # El phrase_time_limit es el tiempo máximo que dura cada frase, pero lo pongo más que nada para que no se quede colgado luego de suspender la máquina, ya que internamente cree que el usuario sigue hablando
+                voice = listener.listen(source, timeout=10, phrase_time_limit=60)
                 self.print_('Procesando...')
-                return sr.Recognizer().recognize_google(voice, language='es', show_all=False, pfilter=0).lower() # Acá se almacena lo que se grabó. Usa el servicio de Google para reconocer el habla en español y lo convierte a minúsculas. Da error cuando no escucha nada             
+                return sr.Recognizer().recognize_google(voice, language='es', show_all=False, pfilter=0).lower() # Acá se almacena lo que se grabó. Usa el servicio de Google para reconocer el habla en español y lo convierte a minúsculas. Da error cuando no escucha nada
         except sr.RequestError:
             N = 3 # Cantidad de veces que va a intentar reconectarse a internet en caso de que falle
             if fallos_conexion < N:
@@ -105,10 +107,9 @@ class AssistantApp:
         except sr.WaitTimeoutError:
             self.print_("Tiempo de espera agotado. Reintentando...")
         except Exception as e:
-            if "can't create new thread at interpreter shutdown" in f'{e}': # Si se cierra la interfaz grafica sin haber finalizado el asistente
-                return self.ERROR_RECONOCEDOR
-            self.print_and_talk(f'Error desconocido en el reconocimiento:\n{e}')
-        return self.ERROR_RECONOCEDOR      
+            self.print_and_talk('Error desconocido en el reconocimiento')
+            self.print_(f'Error:\n{e}')
+        return self.ERROR_RECONOCEDOR
 
     #! Lógica y reconocimiento de los pedidos
     def pedidos(self, rec: str):
@@ -116,74 +117,75 @@ class AssistantApp:
         try:
             if len(rec) == 0: return self.print_and_talk('¿Qué pasa?') # Si el pedido incluía sólo el nombre
             if rec == 'gracias' or rec == 'muchas gracias': return self.print_and_talk('De nada')
-            if rec == 'hola': 
-                if utils.deHumor(self.humor): return utils.mixer_varias_opciones(['wazaa', 'hello_m_f'], self.print_and_talk)      
+            if rec == 'hola':
+                if utils.deHumor(self.humor): return utils.mixer_varias_opciones(['wazaa', 'hello_m_f'], self.print_and_talk)
                 return self.print_and_talk('hola')
-            
+
             rec = rec.replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u').replace('Á', 'A').replace('É', 'E').replace('Í', 'I').replace('Ó', 'O').replace('Ú', 'U') # Quito todas las tildes
             rec = utils.eliminar_frases_introductorias(rec, frasesAFiltrar.frasesIntroductorias)
             rec = utils.eliminar_frases_finales(rec)
             if self.pedidoPreciso(rec): None # Considero dos tipos de pedidos distintos. Si hacemos un "pedido preciso", esta función ejecuta el pedido solicitado y devuelve True
-            
+
             elif self.pedidoGenerico(rec): None
-        
+
             else: self.print_and_talk('No te entendí') # Si detecta algo pero no lo entiende o se pide algo que no está programado, dice "No te entendí"
         except Exception as e:
-            self.print_and_talk(f'Error desconocido:\n{e}') # Si hay un error no previsto, dice "Error desconocido", muestra el error y vuelve al while original
+            self.print_and_talk('Error desconocido') # Si hay un error no previsto, dice "Error desconocido", muestra el error y vuelve al while original
+            self.print_(f'Error:\n{e}')
 
     def pedidoPreciso(self, rec: str): # Denomino "pedido preciso" a todos aquellos pedidos que necesitan ser solicitados de manera específica, no de cualquier forma
         if any(word == rec.split(' ')[-1] for word in ['cancela', 'cancelar', 'cancelas', 'cancelalo', 'olvidalo', 'cancelarlo']): # Cancela el pedido que estás solicitando. La palabra "cancelar" debe decirse al final (o alguna variante similar)
             self.print_and_talk('Ok, cancelo el pedido')
-        
+
         elif any(word == rec.split(' ')[-1] for word in ['minuto', 'minutos']) and (rec.split(' ')[-3] == 'en'): # Programa la ejecución de otro pedido para dentro de n minutos. "minutos" debe decirse al final, y "n" debe ser un número natural
             rec_array = rec.split(' ')
-            
+
             if rec_array[-2] == 'un': # Cambio 'un' por '1' en el pedido, ya que yo necesito que sea un número
                 rec_array[-2] = '1'
-                
+
             elif rec_array[-2] == 'dos':
                 rec_array[-2] = '2'
-                
+
             numero = rec_array[-2]
             if numero.isdigit(): # Me aseguro de que el usuario haya especificado un número de minutos. Si no fue así, ignora el pedido y vuelve a empezar
                 rec = ' '.join(rec.split(' ')[:-3]) # Quito "en X minutos" y solicito un pedido para después
                 threading.Timer(int(numero)*60, lambda: self.pedidos(rec)).start() # Ejecuta el pedido en la cantidad de minutos que hayamos especificado
                 self.print_and_talk('Ok, lo recordaré')
-        
+
         elif utils.buscar(rec): self.print_and_talk('Hecho')
-        
+
         else: return False
         return True
-    
+
     def pedidoGenerico(self, rec: str) -> bool:
         if any(frase in rec for frase in frasesAFiltrar.frases_de_escribir):
             rec = utils.eliminar_hasta_encontrar_alguna_frase(rec, frasesAFiltrar.frases_de_escribir)
             rec = ' '.join(rec.split(' ')[1:])
             pyautogui.typewrite(rec)
             self.print_and_talk('Hecho')
-            
+
         elif any(frase in rec for frase in frasesAFiltrar.frases_de_repetir):  # Repite todo lo que le pediste
             rec = utils.eliminar_hasta_encontrar_alguna_frase(rec, frasesAFiltrar.frases_de_repetir)
             rec = ' '.join(rec.split(' ')[1:])
-            self.print_and_talk(rec)  
-        
+            self.print_and_talk(rec)
+
         elif any(word in rec for word in ['estas ahi', 'estas por ahi', 'seguis ahi', 'me estas escuchando']):
             if utils.deHumor(self.humor): utils.mixer_varias_opciones(['No_lo_se_tu_dime'], self.print_and_talk)
             else: self.print_and_talk('Estoy aquí')
-        
+
         elif ' hora' in rec or rec.startswith('hora'): # Hora actual
             hora = datetime.now().strftime('%H:%M %p')
             self.print_and_talk(f'Son las {hora}')
-            
+
         elif 'fecha' in rec or 'que dia es hoy' in rec:
             fecha = datetime.now().strftime('%d/%m/%Y') # Fecha actual
             self.print_and_talk(f'Hoy es {fecha}')
-        
+
         elif "atajo " in rec and len(rec.split())-1 >= rec.split().index('atajo')+1: # Se ejecutará si la palabra "atajo" está presente en rec y no es la última palabra de la cadena
             utils.atajos(rec, self.print_and_talk)
-        
+
         elif any(word in rec for word in ['abri', 'abras', 'abre', 'ir a']): utils.abrir(rec, self.print_and_talk, self.humor) # Abre archivos que estén en la biblioteca "direccion"
-        
+
         elif any(word in rec for word in ['reprod', 'pon']) and any(word in rec for word in ['cancion', 'musica', 'lista de reproduccion']):
             if os.path.exists(direcciones_.direcciones["canciones"]["url"]):
                 os.startfile(direcciones_.direcciones["canciones"]["url"])
@@ -192,38 +194,38 @@ class AssistantApp:
             else:
                 webbrowser.open(direcciones_.direcciones["codigofuente"]["url"])
                 self.print_and_talk(f'Error: debes colocar un archivo de audio para que yo pueda reproducirlo. Consulta el block de ayuda para más información')
-        
-        elif 'cierr' in rec and any(word in rec for word in ['ventana', 'programa', 'archivo']):                         
+
+        elif 'cierr' in rec and any(word in rec for word in ['ventana', 'programa', 'archivo']):
             pyautogui.hotkey('alt', 'F4')
             self.print_and_talk('Hecho')
-            
+
         elif any(word in rec for word in ['mute']):
             pyautogui.hotkey('volumemute')
             self.print_and_talk('Hecho')
-            
+
         elif 'minimiza' in rec and any(word in rec for word in ['todo', 'toda', 'los', 'las']): # Minimiza todas los programas
             pyautogui.hotkey('win', 'd')
             self.print_and_talk('Hecho')
-            
+
         elif 'minimiza' in rec: # Minimiza el programa actual
             pyautogui.hotkey('alt', 'space', hold='down')
             time.sleep(0.2)
             pyautogui.press('n')
             self.print_and_talk('Hecho')
-            
+
         elif 'volumen' in rec and '%' in rec: utils.volumen_al(rec, self.print_and_talk) # Cambia el volumen al X%
-        
-        elif 'chiste' in rec: self.print_and_talk(pyjokes.get_joke('es', category='all'))    
-        
+
+        elif 'chiste' in rec: self.print_and_talk(pyjokes.get_joke('es', category='all'))
+
         elif any(word in rec for word in ['basta', 'apaga', 'apagues']): self.detener() # Apaga al asistente
-        
+
         elif any(word in rec for word in ['como te llamas', 'cual es tu nombre', 'decime tu nombre']):
-            if utils.deHumor(self.humor): utils.mixer_varias_opciones(['Excel_preg', 'Marad_ee', 'No_lo_se_tu_dime', 'muy_buena_preg', 'info_vale_millones', 'Uvuewewe'], self.print_and_talk)  
-            else: self.print_and_talk(f'Me llamo {self.name}')    
-        
+            if utils.deHumor(self.humor): utils.mixer_varias_opciones(['Excel_preg', 'Marad_ee', 'No_lo_se_tu_dime', 'muy_buena_preg', 'info_vale_millones', 'Uvuewewe'], self.print_and_talk)
+            else: self.print_and_talk(f'Me llamo {self.name}')
+
         elif "tecla " in rec and len(rec.split())-1 >= rec.split().index('tecla')+1: # Si dice la palabra "tecla" en cualquier momento excepto en la palabra final, presiona la tecla pedida luego de esa palabra. Ej: "Presiona la tecla p por favor"
             utils.apretar_tecla(rec, self.print_and_talk)
-        
+
         elif any(word in rec for word in ['captura de pantalla', 'que estoy viendo', 'capturar pantalla', 'captura la pantalla', 'screenshot', 'capturame la pantalla']): # Saca una captura de pantalla
             screenshot = pyautogui.screenshot()
             carpeta_contenedora = 'capturas_de_pantalla'
@@ -231,14 +233,14 @@ class AssistantApp:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S").replace(' ', '_').replace(':', '_')
             screenshot.save(f'{carpeta_contenedora}/{now}_screenshot.png')
             self.print_and_talk('Captura guardada')
-            
+
         elif 'cronometro' in rec and any(word in rec for word in ['inicia', 'comenza', 'comienza']) or any(word in rec for word in ['para', 'deten']):
             self.cronometro = utils.cronometro(rec, self.cronometro, self.print_and_talk, self.humor, self.config)
-            
+
         elif 'alarma' in rec: utils.mixer_(rec, self.print_and_talk)
-        
+
         elif any(word in rec for word in ['humor actual', 'nivel de humor']) and ' al' not in rec: self.print_and_talk(f'Nivel de humor al {self.humor}%. Si querés modificarlo consulta las notas de ayuda')        
-            
+
         elif 'humor' in rec and '%' in rec:
             humor_nuevo = utils.obtener_entero_de_cadena(rec)
             if humor_nuevo == 100:
@@ -251,17 +253,17 @@ class AssistantApp:
             else:
                 self.print_and_talk('El nivel de humor se pide en términos porcentuales del 0 al 100')
                 if utils.deHumor(self.humor): utils.mixer_varias_opciones(['Ah_re_bolu', 'Estup', 'Imbec'], self.print_and_talk)
-                
+
         elif any(word in rec for word in ['ayuda', 'no entiendo', 'que cosas puedes hacer', 'que cosas podes hacer', 'que puedes hacer', 'que podes hacer']):
             webbrowser.open(direcciones_.direcciones["codigofuente"]["url"])
             self.print_and_talk('Proporcionando ayuda')
             if utils.deHumor(self.humor): utils.mixer_varias_opciones(['buen_servicio'], self.print_and_talk)
-            
+
         elif 'ver codigo fuente' in rec:
             webbrowser.open(direcciones_.direcciones["codigofuente"]["url"])
             self.print_and_talk('Abriendo código fuente')
             if utils.deHumor(self.humor): utils.mixer_varias_opciones(['buen_servicio', 'es_bellisimo'], self.print_and_talk)
-        
+
         elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']): # Para que el ".exe" del asistente se cree o actualice
             if self.usuario == 'Ricardo': # Si alguien más aparte de mí accede a este if no hay problema, pero con esto trato de reducir esa posibilidad (me llamo Alejandro pero mi computadora tiene este nombre de usuario)
                 self.humor = utils.cambiar_valor(self.config, 'humor', 5)
