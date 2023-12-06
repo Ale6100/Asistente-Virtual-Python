@@ -1,60 +1,56 @@
 import webbrowser
-import scripts.direcciones_ as direcciones_
+from scripts.addresses import addresses, dir_mixer
 import pyautogui
-import time
-import os
 import time
 import numpy as np
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 from pygame import mixer
 import random
-import scripts.frases_a_filtrar as frasesAFiltrar
+import scripts.filter_phrases as filterPhrases
 
-direcciones = direcciones_.direcciones
-dir_mixer = direcciones_.dir_mixer
+def delete_introductory_phrases(rec: str, delete_phrases: list[str]) -> str:
+    delete_phrases_orderer = sorted(delete_phrases, key=lambda x: len(x), reverse=True) # Reordena según la longitud de caracteres, de mayor a menor
 
-def eliminar_frases_introductorias(rec: str, array: list[str]) -> str:
-    frases_a_borrar_ordenadas = sorted(array, key=lambda x: len(x), reverse=True) # Reordena según la longitud de caracteres, de mayor a menor
-
-    for frase in frases_a_borrar_ordenadas: # Se elimina de rec la primera frase encontrada de la lista
-        if rec.startswith(frase + ' '):
-            rec = rec[len(frase + ' '):]
+    for phrase in delete_phrases_orderer: # Se elimina de rec la primera frase encontrada de la lista
+        if rec.startswith(phrase + ' '):
+            rec = rec[len(phrase + ' '):]
             break
     return rec
 
-def eliminar_frases_finales(rec: str) -> str: # Análogo a eliminar_frases_introductorias, pero con las frases finales
-    frases_a_borrar_ordenadas = sorted(frasesAFiltrar.frasesFinales, key=lambda x: len(x), reverse=True)
-    for frase in frases_a_borrar_ordenadas:
+def delete_end_phrases(rec: str) -> str: # Análogo a delete_introductory_phrases, pero con las frases finales
+    delete_phrases_orderer = sorted(filterPhrases.final_phrases, key=lambda x: len(x), reverse=True)
+    for frase in delete_phrases_orderer:
         if rec.endswith(frase):
             rec = rec[:-len(frase)-1]
             break
     return rec
 
-def buscar(rec: str) -> bool:
+def search(rec: str) -> bool:
     if "en " not in rec: return False
-    rec = eliminar_hasta_encontrar_alguna_frase(rec, ['buscame', 'buscar', 'buscas', 'busca', 'buscarias', 'busques']) # Además de ejecutar la funcion, defino un rec local para no modificar al original por si esta función llega a retornar False
-    rec = eliminar_frases_introductorias(rec, frasesAFiltrar.frases_de_buscar)
+    rec = delete_until_you_find_some_phrase(rec, ['buscame', 'buscar', 'buscas', 'busca', 'buscarias', 'busques']) # Además de ejecutar la funcion, defino un rec local para no modificar al original por si esta función llega a retornar False
+    rec = delete_introductory_phrases(rec, filterPhrases.search_phrases)
 
-    if 'en windows' in rec or 'en el buscador de windows' in rec: # En caso de que la búsqueda sea en el buscador de windows
+    if 'en windows' in rec or 'en el buscador de windows' in rec: # En caso de que la búsqueda sea en el buscador de windows. No la recomiendo
         if "en windows" in rec:
             indexPalClave = rec.find(f'en windows')
         else:
             indexPalClave = rec.find(f'en el buscador de windows')
         rec = rec[:indexPalClave-1] # Recorta la grabación hasta el momento donde se la frase de "en windows" o "en el buscador de windows"
-        pyautogui.hotkey('win', 's')
-        time.sleep(2)
+        pyautogui.hotkey('win', 's') # Abre el buscador de windows, busca lo que pediste y presiona "enter"
+        time.sleep(5)
         pyautogui.typewrite(rec)
-        time.sleep(2)
+        time.sleep(5)
         pyautogui.hotkey('enter')
         return True
 
     array_sitios: list[str] = []
-    for dir in direcciones: # Crea un array con todos los sitios del diccionario "direcciones", siempre y cuando se pueda buscar en ellos
-        if 'sitios' in direcciones[dir] and 'buscador' in direcciones[dir]:
-            array_sitios.extend(direcciones[dir]['sitios'])
+    for dir in addresses: # Crea un array con todos los sitios del diccionario "addresses", siempre y cuando se pueda buscar en ellos
+        if 'sitios' in addresses[dir] and 'buscador' in addresses[dir]:
+            array_sitios.extend(addresses[dir]['sitios'])
 
     sitio = ""
+    busqueda = ""
     for sitios in array_sitios: # Elimina todas las "sitios" al final del pedido y "en" (después del for, si rec="Buscar oso en google", ahora rec="oso")
         if f'en {sitios.lower()}' in rec:
             sitio = sitios # Si algún sitio fue encontrado, lo toma
@@ -64,13 +60,13 @@ def buscar(rec: str) -> bool:
 
     if sitio == "": return False # Si ningún sitio fue solicitado en el pedido, se da por hecho que el usuario no quiere buscar nada y termina la función
 
-    for dir in direcciones: # Busca en el sitio solicitado la búsqueda solicitado
-        if 'buscador' in direcciones[dir]:
-            if sitio in direcciones[dir]['sitios']:
-                webbrowser.open(f'{direcciones[dir]["buscador"]}{busqueda}')
+    for dir in addresses: # Busca en el sitio solicitado la búsqueda solicitado
+        if 'buscador' in addresses[dir]:
+            if sitio in addresses[dir]['sitios']:
+                webbrowser.open(f'{addresses[dir]["buscador"]}{busqueda}')
     return True
 
-def apretar_tecla(rec: str, print_and_talk):
+def key_press(rec: str, print_and_talk):
     rec_array = rec.split()
     indexTecla = rec_array.index('tecla')
     rec = rec_array[indexTecla+1] # Array rec a partir desde el momento que se dijo la palabra tecla
@@ -87,12 +83,12 @@ def apretar_tecla(rec: str, print_and_talk):
         print_and_talk('Hecho')
 
 def repetir(rec: str, print_and_talk) -> bool:
-    frase_a_repetir = eliminar_frases_introductorias(rec, ['repeti', 'repite', 'deci', 'repetis'])
+    frase_a_repetir = delete_introductory_phrases(rec, ['repeti', 'repite', 'deci', 'repetis'])
     if frase_a_repetir == rec: return False
     print_and_talk(rec)
     return True
 
-def atajos(rec: str, print_and_talk):
+def shortcut(rec: str, print_and_talk):
     rec_array = rec.split()
     indexTecla = rec_array.index('atajo')
     rec = rec_array[indexTecla+1] # Array rec a partir desde el momento que se dijo la palabra atajo
@@ -106,11 +102,11 @@ def atajos(rec: str, print_and_talk):
     else:
         print_and_talk('Los atajos son números del 1 al 9')
 
-def abrir(rec: str, print_and_talk, humor: int):
+def open_(rec: str, print_and_talk, humor: int | float):
     array_sitios: list[str] = []
-    for dir in direcciones: # Crea un array con todos los sitios del diccionario "direcciones"
-        if 'sitios' in direcciones[dir] and 'url' in direcciones[dir]:
-            array_sitios.extend(direcciones[dir]['sitios'])
+    for dir in addresses: # Crea un array con todos los sitios del diccionario "addresses"
+        if 'sitios' in addresses[dir] and 'url' in addresses[dir]:
+            array_sitios.extend(addresses[dir]['sitios'])
 
     sitio = ""
     for sitios in array_sitios: # Busca en el sitio solicitado en el pedido
@@ -120,32 +116,32 @@ def abrir(rec: str, print_and_talk, humor: int):
 
     if sitio == "": return print_and_talk("El sitio no está registrado o no se entendió el pedido")
 
-    for dir in direcciones:
-        if 'url' in direcciones[dir]:
-            if sitio in direcciones[dir]['sitios']: # Si el sitio está dentro de los preconfigurados
-                if "http" in direcciones[dir]['url']: # Si se intenta abrir un sitio web
-                    webbrowser.open(direcciones[dir]["url"])
-                    if dir == 'codigofuente' and deHumor(humor): mixer_varias_opciones(['buen_servicio', 'es_bellisimo'], print_and_talk)
+    for dir in addresses:
+        if 'url' in addresses[dir]:
+            if sitio in addresses[dir]['sitios']: # Si el sitio está dentro de los preconfigurados
+                if "http" in addresses[dir]['url']: # Si se intenta abrir un sitio web
+                    webbrowser.open(addresses[dir]["url"])
+                    if dir == 'sourcecode' and check_humor(humor): play_random_sound(['buen_servicio', 'es_bellisimo'], print_and_talk)
 
-                elif direcciones[dir]['url'].startswith('C:'): # Si se intenta abrir un archivo local
-                    if os.path.exists(direcciones[dir]["url"]):
-                        os.startfile(direcciones[dir]["url"])
+                elif addresses[dir]['url'].startswith('C:'): # Si se intenta abrir un archivo local
+                    if os.path.exists(addresses[dir]["url"]):
+                        os.startfile(addresses[dir]["url"])
 
-                    if sitio in direcciones['canciones']['sitios']: # Si además el archivo local es el archivo de audio reservado de música
-                        if os.path.exists(direcciones[dir]["url"]):
-                            pyautogui.press('volumedown', 50), pyautogui.press('volumeup', 10)
+                    if sitio in addresses['canciones']['sitios']: # Si además el archivo local es el archivo de audio reservado de música
+                        if os.path.exists(addresses[dir]["url"]):
+                            p_ = pyautogui.press('volumedown', 50), pyautogui.press('volumeup', 10)
                         else:
-                            pyautogui.press('volumedown', 50), pyautogui.press('volumeup', 10)
-                            webbrowser.open(direcciones["codigofuente"]["url"])
+                            p_ = pyautogui.press('volumedown', 50), pyautogui.press('volumeup', 10)
+                            webbrowser.open(addresses["sourcecode"]["url"])
                             return print_and_talk('Error: debes colocar un archivo de audio para que yo pueda reproducirlo. Consulta el block de ayuda para más información')
 
                 else: # Si el archivo local es interno del asistente (aunque actualmente no hay ninguno)
-                    os.startfile(f'/{direcciones[dir]["url"]}')
+                    os.startfile(f'/{addresses[dir]["url"]}')
                 return print_and_talk("Hecho")
     print_and_talk("El sitio no está registrado o no se entendió el pedido") 
 
-def volumen_al(rec: str, print_and_talk):
-    numero = obtener_entero_de_cadena(rec)
+def change_volume(rec: str, print_and_talk):
+    numero = get_percentage(rec)
     if numero < 0 or numero > 100:
         print_and_talk('El volumen solicitado debe ser un número entero entre 0 y 100')
     else:
@@ -154,16 +150,16 @@ def volumen_al(rec: str, print_and_talk):
         pyautogui.press('volumeup', half_volume)
         print_and_talk(f'Volumen al {2*half_volume} por ciento') # Lo hago así sabiendo que el resultado siempre será par, ya que los botones mueven el valor de volumen de a dos unidades
 
-def cronometro(rec: str, cronometro: int, print_and_talk, humor: int, config):
+def chronometer(rec: str, chronometer: float | int, print_and_talk, humor: int | float, config):
     if any(keyword in rec for keyword in ['inicia', 'comenza', 'comienza']):
         print_and_talk('Iniciando cronómetro')
-        cronometro = cambiar_valor(config, 'cronometro', time.time()) # Registra el tiempo actual
+        chronometer = change_value(config, 'chronometer', time.time()) # Registra el tiempo actual
     else: # Cuando se detiene averigua cuánto tiempo pasó
-        if cronometro == 0:
+        if chronometer == 0:
             print_and_talk('No puedes detener un cronómetro que no ha sido iniciado')
-            if deHumor(humor): mixer_varias_opciones(['Ah_re_bolu', 'Estup', 'Imbec'], print_and_talk)
+            if check_humor(humor): play_random_sound(['Ah_re_bolu', 'Estup', 'Imbec'], print_and_talk)
         else:
-            tiempo_pasado = round(time.time() - cronometro) # Tiempo pasado en segundos
+            tiempo_pasado = round(time.time() - chronometer) # Tiempo pasado en segundos
 
             dias_sr = tiempo_pasado/60/60/24 # el _sr significa que es el valor real
             dias = int(np.floor(dias_sr))
@@ -193,10 +189,10 @@ def cronometro(rec: str, cronometro: int, print_and_talk, humor: int, config):
                 else:
                     string_res += f'{segundos} segundos'
             print_and_talk(string_res)
-            cronometro = cambiar_valor(config, 'cronometro', 0)
-    return cronometro
+            chronometer = change_value(config, 'chronometer', 0)
+    return chronometer
 
-def mixer_(rec: str, print_and_talk, cantidad = 1): # Reproduce sonidos pedidos en formato mp3 que estén en "direccion_m"
+def play_sound(rec: str, print_and_talk, cantidad = 1): # Reproduce sonidos pedidos en formato mp3 que estén en "direccion_m"
     try:
         for i in dir_mixer:
             if i in rec:
@@ -208,18 +204,18 @@ def mixer_(rec: str, print_and_talk, cantidad = 1): # Reproduce sonidos pedidos 
     except Exception as e:
         print_and_talk('Error, el archivo de sonido no está o no funciona')
 
-def mixer_varias_opciones(opciones: list[str], print_and_talk):
-    mixer_(random.choice(opciones), print_and_talk)
+def play_random_sound(opciones: list[str], print_and_talk):
+    play_sound(random.choice(opciones), print_and_talk)
 
-def deHumor(humor: int | float): # Agarra un número al azar y evalúa si se activa un comentario "gracioso" en algunos pedidos
+def check_humor(humor: int | float): # Agarra un número al azar y evalúa si se activa un comentario "gracioso" en algunos pedidos
     return 100 * random.random() < humor
 
-def obtener_entero_de_cadena(rec: str): # Obtiene el número entero n de la cadena "bla bla bla n% bla bla"
+def get_percentage(rec: str): # Obtiene el número entero n de la cadena "bla bla bla n% bla bla"
     numero = rec.split('%')[0].split(' ')[-1]
     numero_entero = numero.replace('.', ',').split(',')[0]
     return int(numero_entero)
 
-def eliminar_hasta_encontrar_alguna_frase(rec: str, frases: list[str]): # En caso de que el usuario diga alguna de las palabras de "frases", elimina de rec todo lo que haya dicho antes de eso
+def delete_until_you_find_some_phrase(rec: str, frases: list[str]): # En caso de que el usuario diga alguna de las palabras de "frases", elimina de rec todo lo que haya dicho antes de eso
     frases_buscar_ordenadas = sorted(frases, key=lambda x: len(x), reverse=True)
 
     for frase in frases_buscar_ordenadas:
@@ -228,7 +224,7 @@ def eliminar_hasta_encontrar_alguna_frase(rec: str, frases: list[str]): # En cas
             break
     return rec
 
-def cambiar_valor(config, clave: str, valor: str | int | float): # Modifica el valor de un dato en config.ini
+def change_value(config, clave: str, valor: int | float): # Modifica el valor de un dato en config.ini
     config.set('Assistant', clave, str(valor))
     with open('config.ini', 'w') as f:
         config.write(f)

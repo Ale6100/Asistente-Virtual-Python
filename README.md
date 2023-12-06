@@ -7,7 +7,9 @@ Mi objetivo con este proyecto es lograr que el asistente sea lo suficientemente 
 
 ## Guía para usuarios 🧑‍💻
 ### Descarga ⬇️
-Si deseas obtener una copia local del asistente listo para usar, haz click [aquí](https://github.com/Ale6100/Asistente-Virtual-Python/raw/main/Asistente_virtual.rar). Te descargará una capreta comprimida en formato `.rar` llamada "Asistente_virtual" que tendrás que descomprimir. 
+Si deseas obtener una copia local del asistente listo para usar, haz click [aquí](https://github.com/Ale6100/Asistente-Virtual-Python/raw/main/Asistente_virtual.rar). Te descargará una capreta comprimida en formato `.rar` llamada "Asistente_virtual" que tendrás que descomprimir.
+
+_Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la última versión!_
 
 ### Uso 📝
 1. Abre el archivo ejecutable Asistente_virtual dentro de la carpeta con su mismo nombre
@@ -72,7 +74,7 @@ Tiene 3 activadores más pero solo están para aumentar la interactividad (`Okay
 
 3. Se necesita conexión activa a internet para que funcione el reconocedor de voz. En caso de que se desconecte, tratará de reconectarse un par de veces
 
-4. Si suspendés la computadora y la volvés a encender, el asistente dejará de funcionar como máximo 60 segudos, luego volverá a estar disponible (esta característica aún la estoy testeando, pero parece funcionar)
+4. Si suspendés la computadora y la volvés a encender, el asistente dejará de funcionar como máximo 60 segudos, luego volverá a estar disponible
 
 ## Guía para programadores 👨‍💻
 
