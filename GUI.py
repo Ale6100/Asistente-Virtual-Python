@@ -27,7 +27,7 @@ class AssistantGui:
 
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
 
-        self.intro_label = tk.Label(self.root, text=f'Tu asistente se llama "{self.name}". Modo informal' if self.informal_chat else f'Tu asistente se llama "{self.name}". Pídele algo')
+        self.intro_label = tk.Label(self.root, text=f'El asistente se llama "{self.name}". Modo informal' if self.informal_chat else f'Tu asistente se llama "{self.name}". Pídele algo')
         self.intro_label.grid(row = 0, column = 0, columnspan = 6, pady=5)
         self.intro_label.config(font=(None, 9, 'bold'))
 

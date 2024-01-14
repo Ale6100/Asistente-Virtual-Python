@@ -29,7 +29,7 @@ class AssistantApp:
         self.q = q
         self.informal_chat = self.config.getint('Assistant', 'informal_chat', fallback=0)
         self.print_('Encendido')
-        self.chat = train_ai(self.informal_chat, self.print_and_talk)
+        self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
         self.start()
         self.print_('Detenido')
 
@@ -84,7 +84,7 @@ class AssistantApp:
 
     def recognise_speech_and_pass_it_to_text(self, connection_failures = 0):
         self.attempts += 1
-        if (not self.informal_chat) and (self.attempts % 100 == 0): self.chat = train_ai(self.informal_chat, self.print_and_talk) # Reinicia la IA cada 100 escuchas, siempre y cuando estemos en un chat formal
+        if (not self.informal_chat) and (self.attempts % 100 == 0): self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk) # Reinicia la IA cada 100 escuchas, siempre y cuando estemos en un chat formal
         try:
             with sr.Microphone() as source: # Abrimos el micrófono como fuente de entrada de audio
                 listener = sr.Recognizer()
@@ -123,19 +123,27 @@ class AssistantApp:
                 if utils.check_humor(self.humor): return utils.play_random_sound(['wazaa', 'hello_m_f'], self.print_and_talk)
                 return self.print_and_talk('hola')
 
-            if any(word == rec.split(' ')[-1] for word in ['basta', 'apaga', 'apagues']): self.stop() # Apaga al asistente. La palabra "basta" debe decirse al final (o alguna variante similar)
+            if any(word == rec.split(' ')[-1] for word in ['basta', 'apaga', 'apagues']): return self.stop() # Apaga al asistente. La palabra "basta" debe decirse al final (o alguna variante similar)
 
             if self.informal_chat: # Si estamos en un chat informal, ignoramos los pedidos
                 return self.print_and_talk(utils.process_with_natural_language_informal_talk(rec, self.chat))
 
             response_ia = utils.process_with_natural_language(rec, self.chat)
 
+            if response_ia["action"] == "none": # Esto no debería suceder nunca. Si sucede, es porque se está inventando cosas
+                self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+                return self.print_and_talk('No te entendi')
+
             if self.order_without_ia(rec): None
 
             elif response_ia["action"] != "order_not_in_list": # Si la IA detecta que el pedido está dentro de los pre-configurados para ella
                 self.order_with_ia(response_ia)
 
-            else: self.print_and_talk('No te entendí') # Si detecta algo pero no lo entiende o se pide algo que no está programado, dice "No te entendí"
+            else: # Si detecta algo pero no lo entiende o se pide algo que no está programado:
+                if 100 * random.random() < 20: # Una de cada cinco veces te da una respuesta más larga
+                    self.print_and_talk('No te entendí. Es posible que el pedido no esté preconfigurado')
+                else:
+                    self.print_and_talk('No te entendí')
         except Exception as e:
             self.print_and_talk('Error desconocido') # Si hay un error no previsto, dice "Error desconocido", muestra el error y vuelve al while original
             self.print_(f'Error:\n{e}')
@@ -179,10 +187,10 @@ class AssistantApp:
         action = response_ia["action"]
 
         if action == "search":
-            name = response_ia["name"]
+            site = response_ia["site"].lower()
             query = response_ia["query"]
 
-            if "windows" in name:
+            if "windows" in site:
                 pyautogui.hotkey('win', 's') # Abre el buscador de windows, busca lo que pediste y presiona "enter"
                 time.sleep(5)
                 pyautogui.typewrite(query)
@@ -192,7 +200,7 @@ class AssistantApp:
             else:
                 for dir in addresses: # Busca en el sitio solicitado la búsqueda solicitada
                     if 'buscador' in addresses[dir]:
-                        if name.lower() in [dir.lower() for dir in addresses[dir]['sitios']]:
+                        if site in [dir.lower() for dir in addresses[dir]['sitios']]:
                             webbrowser.open(f'{addresses[dir]["buscador"]}{query}')
                             self.print_and_talk("Hecho")
                             break
@@ -207,9 +215,6 @@ class AssistantApp:
 
             threading.Timer(int(float(minutes_string))*60, lambda: self.request(response_ia["order"])).start() # Ejecuta el pedido en la cantidad de minutos que hayamos especificado
             self.print_and_talk('Ok, lo recordaré')
-
-        elif action == "check_listening":
-            self.print_and_talk("Te escucho")
 
         elif action == "time": # Hora actual
             hora = datetime.now().strftime('%H:%M %p')
@@ -334,10 +339,15 @@ class AssistantApp:
             self.print_and_talk('Hecho')
             if utils.check_humor(self.humor): utils.play_random_sound(['buen_servicio'], self.print_and_talk)
 
-        elif action == "too_many_orders":
-            list_orders = response_ia["orders"]
+        elif action == "response":
+            self.print_and_talk(response_ia["text"])
+
+        elif action == "multiple_orders":
+            list_orders = response_ia["orders"].split(';')
             for i, order in enumerate(list_orders):
                 self.request(order)
+        else: # No debería llegar nunca acá. Si eso sucede, es porque se está inventando cosas
+            self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
 
     #! Ciclo para hacer que el asistente inicie y no termine nunca a menos que se lo pidamos específicamente
     def start(self):

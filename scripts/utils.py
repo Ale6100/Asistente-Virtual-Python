@@ -7,7 +7,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 from pygame import mixer
 import random
 import json
-from scripts.train_ai import safety_settings
+from scripts.train_ai import safety_settings, train_ai
 
 def key_press(rec: str, print_and_talk):
     rec_array = rec.split()
@@ -101,3 +101,7 @@ def process_with_natural_language(rec: str, chat):
 def process_with_natural_language_informal_talk(rec: str, chat):
     response_ia = chat.send_message(rec, safety_settings=safety_settings)
     return response_ia.text
+
+def restart_ia(informal_chat, print_and_talk): # Reinicia la IA. Es más que nada para aquellos casos donde se detecta que no está funcionando como debería
+    print("----- IA reiniciada -----")
+    return train_ai(informal_chat, print_and_talk)

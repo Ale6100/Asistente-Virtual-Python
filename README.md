@@ -1,6 +1,6 @@
 # Asistente virtual con Python
 
-> Actualmente este proyecto no funciona como debería ya que está sufiendo mejoras. Pronto tendrá incorporada una IA que será capaz de entender mejor el lenguaje natural. Si mientras tanto deseas ver la versión "estable", haz click [aquí](https://github.com/Ale6100/Asistente-Virtual-Python/tree/91230b83785de19c32bf84ba4d3a1b83f50cdff7)
+> Ahora impulsado con IA!
 
 Bienvenido! este es mi primer asistente creado con Python. Hace un tiempo hice uno con JavaScript (https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
 
@@ -30,7 +30,7 @@ _Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la últ
 
     * Todas los pedidos deben iniciar con el nombre del asistente. Por defecto se llama "Okay" por simplicidad (puedes decir "Okey" también, ya que lo interpreta como "Okay"). Por ejemplo: `Okay, abrir Twitter`
 
-    * Con un botón en la interfaz puedes activar y desactivar el **Modo informal** (de manera predeterminada viene desactivado), donde el asistente no acatará pedidos, si no que simplemente conversará en una charla no pre-programada para conversar sobre distintos temas. Cuando hablas con este modo también es necesario iniciar con el nombre del asistente. Este botón estará habilitado únicamente cuando el asistente esté detenido.
+    * Con un botón en la interfaz puedes activar y desactivar el **Modo informal** (de manera predeterminada viene desactivado), donde el asistente no acatará pedidos, si no que simplemente conversará sobre los temas que desees. Cuando hablas con este modo también es necesario iniciar con el nombre del asistente. Este botón estará habilitado únicamente cuando el asistente esté detenido.
 
     * Pedido encapsulado: Para mejorar el entendimiento, opcionalmente puedes decir su nombre por segunda vez en un mismo pedido. En este caso, el asistente interpretará que el pedido está en medio de la primera y la segunda vez que lo nombraste. Por ejemplo, si dices `bla bla bla Okay, abrir Twitter Okay bla bla bla`, el pedido será `abrir Twitter`
 
@@ -46,10 +46,9 @@ _Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la últ
 | `cancelar` | Cancela el pedido que estás solicitando | Okay, abrir YouTube. No, cancelar | La palabra `cancelar` debe decirse al final |
 | `cerrar` ... `archivo` | Cierra el programa actual | Okay, cerrar archivo | --- |
 | `tecla` X | Presiona la tecla solicitada | Okay, presioná la tecla P | Debe decirse al final del pedido |
-| `alarma`... `en` n `minutos` | Programa una alarma para dentro de n minutos | Okay, activá la alarma en 5 minutos | --- |
+| `alarma en` n `minutos` | Programa una alarma para dentro de n minutos | Okay, activá la alarma en 5 minutos | la palabra `alarma` debe decirse justo antes del `en` |
 | `buscar` X `en` Y | Busca en el sitio Y lo que le pediste (X) | Okay, buscar "Mercado Libre" en Linkedin | Sólo funciona en sitios preconfigurados |
 | `en` n `minutos` | Programa la ejecución de otro pedido para dentro de n minutos | Okay, abrir Netflix en tres minutos | "n" debe ser un número natural |
-| `estas ahí` | Esto es más que nada para chequar si te está escuchando | Okay, ¿estás ahí? | --- |
 | `hora` | Consultar la hora | Okay, decime qué hora es | --- |
 | `fecha` | Consultar la fecha | Okay, ¿qué fecha es hoy? | --- |
 | `atajo` n | Abre el n-ésimo programa disponible de la barra de tareas | Okay, atajo 1 | `n` debe ser un número natural entre 1 y 9. No lo abrirá si no lo tenés disponible |
@@ -69,7 +68,7 @@ _Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la últ
 | `ver código fuente` | Te redirige al código fuente del asistente | Okay, ver código fuente | --- |
 | `temperatura` | Busca en google la info pedida sobre el clima | Okay, temperatura del fin de semana | --- |
 
-Tiene 4 activadores más pero solo están para aumentar la interactividad (`Okay` a secas, `gracias` y `hola`)
+Tiene varios activadores más pero sólo sirven para aumentar la interactividad
 
 También es posible hacerle varios pedidos al mismo tiempo!
 
@@ -82,7 +81,7 @@ También es posible hacerle varios pedidos al mismo tiempo!
 
 4. Si suspendés la computadora y la volvés a encender, el asistente dejará de funcionar como máximo 60 segudos, luego volverá a estar disponible
 
-5. Dado que utilizo Gemini Pro (una IA no muy avanzada), es natural que de vez en cuando no funcione como debería
+5. Dado que utilizo Gemini Pro (una IA no muy avanzada), es natural que de vez en cuando no funcione como debería, incluso a veces puede inventarse datos. Sus memorias se reinician cada 100 escuchas para minimizar el margen de error, y la mayoría de las veces que se detectan respuestas inesperadas.
 
 ## Guía para programadores 👨‍💻
 
@@ -120,6 +119,7 @@ Si deseas modificar al asistente, considera que:
     * Carpeta [scripts](./scripts) - Archivos python de apoyo
     * Carpeta [complementos](./complementos) - Recursos complementarios
     * [config.ini](./config.ini) - Archivo donde guardo configuración dinámica y persistente del asistente
+    * [train_ai.py](./scripts/train_ai.py) - Aquí entreno a la IA para que entienda la estructura de la mayoría de los pedidos
 
 * Una vez que estés conforme con tus cambios, coloca en la terminal el comando:
 
@@ -133,3 +133,11 @@ para compilar el proyecto en la carpeta dist. Asegúrate de haber eliminado (o v
 
 ### Despliegue 📦
 Podrás iniciar el asistente ejecutando [GUI.py](GUI.py)
+
+
+## Autor ✒️
+
+| <img src="https://avatars.githubusercontent.com/u/107259761?v=4" width=50>|
+|:-:|
+| **Alejandro Portaluppi** |
+| <a href="https://github.com/Ale6100"><img src="https://img.shields.io/badge/github-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white"/></a> <a href="https://www.linkedin.com/in/alejandro-portaluppi"><img src="https://img.shields.io/badge/linkedin%20-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white"/></a> |

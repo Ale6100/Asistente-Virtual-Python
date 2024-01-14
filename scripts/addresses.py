@@ -73,6 +73,11 @@ addresses = {
         'url': 'https://www.amazon.com/',
         'buscador': 'https://www.amazon.com/s?k='
     },
+    'reddit': {
+        'sitios': ['Reddit'],
+        'url': 'https://www.reddit.com/',
+        'buscador': 'https://www.reddit.com/search?q='
+    },
     'whatsapp': {
         'sitios': ['WhatsApp'],
         'url': 'https://web.whatsapp.com/',
@@ -162,7 +167,7 @@ addresses = {
         'url': 'https://chat.openai.com/',
     },
     'notas': {
-        'sitios': ['nota'],
+        'sitios': ['nota', 'notas', 'block de notas', 'lista de notas'],
         'url': 'https://lista-de-notas.netlify.app',
     }
 }
