@@ -1,4 +1,7 @@
 # Asistente virtual con Python
+
+> Actualmente este proyecto no funciona como debería ya que está sufiendo mejoras. Pronto tendrá incorporada una IA que será capaz de entender mejor el lenguaje natural. Si mientras tanto deseas ver la versión "estable", haz click [aquí](https://github.com/Ale6100/Asistente-Virtual-Python/tree/91230b83785de19c32bf84ba4d3a1b83f50cdff7)
+
 Bienvenido! este es mi primer asistente creado con Python. Hace un tiempo hice uno con JavaScript (https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
 
 Mi objetivo con este proyecto es lograr que el asistente sea lo suficientemente útil como para que desees utilizarlo a diaro, sabiendo que lo puedes dejar encendido en segundo plano para que esté listo en cualquier momento que lo necesites.
@@ -37,44 +40,47 @@ _Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la últ
 
 | Palabras clave | Descripción | Ejemplo | Condición
 | :--- | :--- | :--- | :--- |
-| `basta` | Apaga al asistente | Okay, basta | --- |
+| `basta` | Apaga al asistente | Okay, basta | La palabra `basta` debe decirse al final |
 | `cancelar` | Cancela el pedido que estás solicitando | Okay, abrir YouTube. No, cancelar | La palabra `cancelar` debe decirse al final |
-| `en` n `minutos` | Programa la ejecución de otro pedido para dentro de n minutos | Okay, abrir Netflix en tres minutos | `minutos` debe decirse al final, y "n" debe ser un número natural |
-| `buscar` X `en` Y | Busca en el sitio Y lo que le pediste (X) | Okay, buscar "Mercado Libre" en Linkedin | Debe invocarse siguiendo el patrón mencionado. Sólo funciona en sitios preconfigurados |
-| `escribir` | Escribe lo que quieras sin símbolos y en minúsculas | Okay, escribir "comprar salsa de tomate" | --- |
-| `repetí` | Repite lo que quieras | Okay, repetí "hola me llamo Esteban" | --- |
+| `cerrar` ... `archivo` | Cierra el programa actual | Okay, cerrar archivo | --- |
+| `tecla` X | Presiona la tecla solicitada | Okay, presioná la tecla P | Debe decirse al final del pedido |
+| `alarma`... `en` n `minutos` | Programa una alarma para dentro de n minutos | Okay, activá la alarma en 5 minutos | --- |
+| `buscar` X `en` Y | Busca en el sitio Y lo que le pediste (X) | Okay, buscar "Mercado Libre" en Linkedin | Sólo funciona en sitios preconfigurados |
+| `en` n `minutos` | Programa la ejecución de otro pedido para dentro de n minutos | Okay, abrir Netflix en tres minutos | "n" debe ser un número natural |
 | `estas ahí` | Esto es más que nada para chequar si te está escuchando | Okay, ¿estás ahí? | --- |
 | `hora` | Consultar la hora | Okay, decime qué hora es | --- |
 | `fecha` | Consultar la fecha | Okay, ¿qué fecha es hoy? | --- |
 | `atajo` n | Abre el n-ésimo programa disponible de la barra de tareas | Okay, atajo 1 | `n` debe ser un número natural entre 1 y 9. No lo abrirá si no lo tenés disponible |
 | `abre` X | Abre el sitio X | Okay, abre Twitter | Sólo funciona en sitios preconfigurados |
 | `reproduce musica` | Setea el volumen al 20% y abre una lista de reproducción | Okay, reproduce música | La lista de reproducción debe estar en C:/Users/{usuario}/Music/av/musica.xspf |
-| `cerrar` X `archivo` | Cierra el programa actual | Okay, cerrar archivo | --- |
 | `mute` | Activa/desactiva el mute | Okay, mute | --- |
-| `minimizar todo` | Minimiza todos los programas | Okay, minimizar todo | --- |
 | `minimizar` | Minimiza el programa actual | Okay, minimizar | --- |
+| `minimizar todo` | Minimiza todos los programas | Okay, minimizar todo | --- |
 | `volumen`...`%` | Cambia el volumen de la computadora | Okay, volumen al 20% | Sólo coloca valores pares |
 | `chiste` | Te dice un chiste relacionado a la informática (son malísimos) | Okay, decime un chiste | --- |
 | `cómo te llamás` | Te dice su nombre | Okay, ¿Cómo te llamás? | --- |
-| `tecla` X | Presiona la tecla solicitada | Okay, presioná la tecla P | --- |
 | `captura de pantalla` | Hace una captura de pantalla | Okay, sacá una captura de pantalla | Guarda la captura en la carpeta `capturas_de_pantalla` ubicada donde está el asistente |
 | `iniciá` / `detené` el `cronómetro` | Inicia o detiene un cronómetro | Okay, iniciá el cronómetro | --- |
-| `alarma`... `en` n `minutos` | Programa una alarma para dentro de n minutos | Okay, activá la alarma en 5 minutos | --- |
 | `nivel de humor` | Consulta el porcentaje de "humor" (5% por defecto) | Okay, decime tu nivel de humor | --- |
 | `humor`...`X%` | Cambia el nivel de humor al n%, siendo n un número entero entre 0 y 100 | Okay, nivel de humor al 10% | --- |
 | `ayuda` | Te redirige a este readme para entender mejor al asistente | Okay, necesito ayuda | --- |
 | `ver código fuente` | Te redirige al código fuente del asistente | Okay, ver código fuente | --- |
+| `temperatura` | Busca en google la info pedida sobre el clima | Okay, temperatura del fin de semana | --- |
 
-Tiene 3 activadores más pero solo están para aumentar la interactividad (`Okay` a secas, `gracias` y `hola`)
+Tiene 4 activadores más pero solo están para aumentar la interactividad (`Okay` a secas, `gracias` y `hola`)
+
+También es posible hacerle varios pedidos al mismo tiempo!
 
 ### Limitaciones 🚨
 1. Está hecho para ser utilizado en windows
 
 2. A la hora de hacer un pedido debes ser claro y conciso, sin pausas
 
-3. Se necesita conexión activa a internet para que funcione el reconocedor de voz. En caso de que se desconecte, tratará de reconectarse un par de veces
+3. Se necesita conexión activa a internet para que funcione el reconocedor de voz y la IA. En caso de que se desconecte, tratará de reconectarse un par de veces
 
 4. Si suspendés la computadora y la volvés a encender, el asistente dejará de funcionar como máximo 60 segudos, luego volverá a estar disponible
+
+5. Dado que utilizo Gemini Pro (una IA no muy avanzada), es natural que de vez en cuando no funcione como debería
 
 ## Guía para programadores 👨‍💻
 
@@ -84,7 +90,7 @@ El código está hecho y testeado utilizando la versión 3.12.0 de Python y un W
 ### Descarga ⬇️
 Si deseas obtener una copia local, descarga el archivo comprimido .zip desde el botón verde "code" o haz click [aquí](https://github.com/Ale6100/Asistente-Virtual-Python/archive/refs/heads/main.zip)
 
-### Instalación 🔧 (en windows) 
+### Instalación 🔧 (en windows)
 Primero debes crear un entorno virtual con el comando
 ```bash
 py -3 -m venv .venv

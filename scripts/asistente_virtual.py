@@ -3,16 +3,16 @@ import speech_recognition as sr # Reconocimiento de voz
 import time
 import scripts.utils as utils
 import configparser
-import scripts.filter_phrases as filterPhrases
 import threading
 import pyautogui
 from datetime import datetime
 import os
-import scripts.addresses as addresses
+from scripts.addresses import addresses
 import webbrowser
 import pyjokes
 import random
 import shutil
+from scripts.train_ai import train_ai
 
 class AssistantApp:
     def __init__(self, q, stop_event):
@@ -29,6 +29,7 @@ class AssistantApp:
         self.configAudio()
         self.q = q
         self.print_('Encendido')
+        self.chat = train_ai()
         self.start()
         self.print_('Detenido')
 
@@ -117,117 +118,171 @@ class AssistantApp:
         try:
             if len(rec) == 0: return self.print_and_talk('¿Qué pasa?') # Si el pedido incluía sólo el nombre
             if rec == 'gracias' or rec == 'muchas gracias': return self.print_and_talk('De nada')
-            if rec == 'hola':
+            if rec == 'hola' or rec == 'buenas' or rec == 'buenos días' or rec == 'buenas tardes':
                 if utils.check_humor(self.humor): return utils.play_random_sound(['wazaa', 'hello_m_f'], self.print_and_talk)
                 return self.print_and_talk('hola')
 
-            rec = rec.replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u').replace('Á', 'A').replace('É', 'E').replace('Í', 'I').replace('Ó', 'O').replace('Ú', 'U') # Quito todas las tildes
-            rec = utils.delete_introductory_phrases(rec, filterPhrases.introductory_phrases)
-            rec = utils.delete_end_phrases(rec)
-            if self.precise_order(rec): None # Considero dos tipos de pedidos distintos. Si hacemos un "pedido preciso", esta función ejecuta el pedido solicitado y devuelve True
+            response_ia = utils.process_with_natural_language(rec, self.chat)
+            print(f'response_ia["action"]:\n{response_ia["action"]}\n')
 
-            elif self.generic_order(rec): None
+            if self.order_without_ia(rec): None
+
+            elif response_ia["action"] != "order_not_in_list": # Si la IA detecta que el pedido está dentro de los pre-configurados para ella
+                self.order_with_ia(response_ia)
 
             else: self.print_and_talk('No te entendí') # Si detecta algo pero no lo entiende o se pide algo que no está programado, dice "No te entendí"
         except Exception as e:
             self.print_and_talk('Error desconocido') # Si hay un error no previsto, dice "Error desconocido", muestra el error y vuelve al while original
             self.print_(f'Error:\n{e}')
 
-    def precise_order(self, rec: str): # Denomino "pedido preciso" a todos aquellos pedidos que necesitan ser solicitados de manera específica, no de cualquier forma
+    def order_without_ia(self, rec: str):
+        rec = rec.lower().replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u').replace('Á', 'A').replace('É', 'E').replace('Í', 'I').replace('Ó', 'O').replace('Ú', 'U')
+
         if any(word == rec.split(' ')[-1] for word in ['cancela', 'cancelar', 'cancelas', 'cancelalo', 'olvidalo', 'cancelarlo']): # Cancela el pedido que estás solicitando. La palabra "cancelar" debe decirse al final (o alguna variante similar)
             self.print_and_talk('Ok, cancelo el pedido')
-
-        elif any(word == rec.split(' ')[-1] for word in ['minuto', 'minutos']) and (rec.split(' ')[-3] == 'en'): # Programa la ejecución de otro pedido para dentro de n minutos. "minutos" debe decirse al final, y "n" debe ser un número natural
-            rec_array = rec.split(' ')
-
-            if rec_array[-2] == 'un': # Cambio 'un' por '1' en el pedido, ya que yo necesito que sea un número
-                rec_array[-2] = '1'
-
-            elif rec_array[-2] == 'dos':
-                rec_array[-2] = '2'
-
-            numero = rec_array[-2]
-            if numero.isdigit(): # Me aseguro de que el usuario haya especificado un número de minutos. Si no fue así, ignora el pedido y vuelve a empezar
-                rec = ' '.join(rec.split(' ')[:-3]) # Quito "en X minutos" y solicito un pedido para después
-                threading.Timer(int(numero)*60, lambda: self.request(rec)).start() # Ejecuta el pedido en la cantidad de minutos que hayamos especificado
-                self.print_and_talk('Ok, lo recordaré')
-
-        elif utils.search(rec): self.print_and_talk('Hecho')
-
-        else: return False
-        return True
-
-    def generic_order(self, rec: str) -> bool:
-        if any(frase in rec for frase in filterPhrases.writing_phrases): # Escribe todo lo que le pediste
-            rec = utils.delete_until_you_find_some_phrase(rec, filterPhrases.writing_phrases)
-            rec = ' '.join(rec.split(' ')[1:])
-            pyautogui.typewrite(rec)
-            self.print_and_talk('Hecho')
-
-        elif any(frase in rec for frase in filterPhrases.repeat_phrases):  # Repite todo lo que le pediste
-            rec = utils.delete_until_you_find_some_phrase(rec, filterPhrases.repeat_phrases)
-            rec = ' '.join(rec.split(' ')[1:])
-            self.print_and_talk(rec)
-
-        elif any(word in rec for word in ['estas ahi', 'estas por ahi', 'seguis ahi', 'me estas escuchando']):
-            if utils.check_humor(self.humor): utils.play_random_sound(['No_lo_se_tu_dime'], self.print_and_talk)
-            else: self.print_and_talk('Estoy aquí')
-
-        elif ' hora' in rec or rec.startswith('hora'): # Hora actual
-            hora = datetime.now().strftime('%H:%M %p')
-            self.print_and_talk(f'Son las {hora}')
-
-        elif 'fecha' in rec or 'que dia es hoy' in rec:
-            fecha = datetime.now().strftime('%d/%m/%Y') # Fecha actual
-            self.print_and_talk(f'Hoy es {fecha}')
-
-        elif "atajo " in rec and len(rec.split())-1 >= rec.split().index('atajo')+1: # Se ejecutará si la palabra "atajo" está presente en rec y no es la última palabra de la cadena
-            utils.shortcut(rec, self.print_and_talk)
-
-        elif any(word in rec for word in ['abri', 'abras', 'abre', 'ir a']): utils.open_(rec, self.print_and_talk, self.humor) # Abre archivos que estén en la biblioteca "direccion"
-
-        elif any(word in rec for word in ['reprod', 'pon']) and any(word in rec for word in ['cancion', 'musica', 'lista de reproduccion']):
-            if os.path.exists(addresses.addresses["canciones"]["url"]):
-                os.startfile(addresses.addresses["canciones"]["url"])
-                p_ = pyautogui.press('volumedown', 50), pyautogui.press('volumeup', 10) # Para que ponga el volumen al 20%
-                self.print_and_talk('Reproduciendo música')
-            else:
-                webbrowser.open(addresses.addresses["sourcecode"]["url"])
-                self.print_and_talk(f'Error: debes colocar un archivo de audio para que yo pueda reproducirlo. Consulta el block de ayuda para más información')
 
         elif any(word in rec for word in ['cierr', 'cerra']) and any(word in rec for word in ['ventana', 'programa', 'archivo']):
             pyautogui.hotkey('alt', 'F4')
             self.print_and_talk('Hecho')
 
-        elif any(word in rec for word in ['mute']):
+        elif any(word == rec.split(' ')[-1] for word in ['basta', 'apaga', 'apagues']): self.stop() # Apaga al asistente. La palabra "basta" debe decirse al final (o alguna variante similar)
+
+        elif "tecla " in rec and len(rec.split())-1 >= rec.split().index('tecla')+1: # Si dice la palabra "tecla" en cualquier momento excepto en la palabra final, presiona la tecla pedida luego de esa palabra. Ej: "Presiona la tecla p por favor"
+            utils.key_press(rec, self.print_and_talk)
+
+        elif 'alarma' == rec.split()[-1]: utils.play_sound(rec, self.print_and_talk) # Si "alarma" se dice al final
+
+        elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']) and self.user == 'Ricardo': # Para que el ".exe" del asistente se cree o actualice
+            # Si alguien más aparte de mí accede a este if no hay problema, pero con esto trato de reducir esa posibilidad (me llamo Alejandro pero mi computadora tiene este nombre de usuario)
+            self.humor = utils.change_value(self.config, 'humor', 5)
+            self.print_and_talk('Actualizando asistente')
+            nombreAsistente = 'Asistente_virtual'
+            current_dir = os.getcwd()
+            if os.path.exists(f'{current_dir}/dist'): shutil.rmtree(f'{current_dir}/dist') # Elimina la carpeta dist
+            os.chdir(current_dir) # Línea necesaria para que funcione sin importar si ejecuto esto desde acá o desde GUI.py
+            os.system(f'\
+            pyinstaller --noconsole --name "{nombreAsistente}" --icon=complementos/icon.ico --contents-directory . \
+            --add-data "complementos;complementos" \
+            --add-data "scripts;scripts" \
+            --add-data "config.ini;." \
+            GUI.py') # Esta línea crea el nuevo archivo ejecutable
+            os.remove(f'{current_dir}/{nombreAsistente}.spec')
+            shutil.rmtree(f'{current_dir}/build') # Elimina la carpeta build
+            self.stop()
+        else: return False
+        return True
+
+    def order_with_ia(self, response_ia):
+        action = response_ia["action"]
+
+        if action == "search":
+            name = response_ia["name"]
+            query = response_ia["query"]
+
+            if "windows" in name:
+                pyautogui.hotkey('win', 's') # Abre el buscador de windows, busca lo que pediste y presiona "enter"
+                time.sleep(5)
+                pyautogui.typewrite(query)
+                time.sleep(5)
+                pyautogui.hotkey('enter')
+                self.print_and_talk("Hecho")
+            else: #! Ver qué hacer cuando se pide buscar en un sitio que no está preconfigurado
+                for dir in addresses: # Busca en el sitio solicitado la búsqueda solicitada
+                    if 'buscador' in addresses[dir]:
+                        if name.lower() in [dir.lower() for dir in addresses[dir]['sitios']]:
+                            webbrowser.open(f'{addresses[dir]["buscador"]}{query}')
+                            self.print_and_talk("Hecho")
+                            break
+                else:
+                    self.print_and_talk(f'El sitio no está preconfigurado')
+
+        elif action == "program_order":
+            minutes_string = response_ia["minutes"]
+
+            if ',' in minutes_string:
+                minutes_string = minutes_string.split(',')[0]
+
+            threading.Timer(int(float(minutes_string))*60, lambda: self.request(response_ia["order"])).start() # Ejecuta el pedido en la cantidad de minutos que hayamos especificado
+            self.print_and_talk('Ok, lo recordaré')
+
+        elif action == "check_listening":
+            self.print_and_talk("Te escucho")
+
+        elif action == "time": # Hora actual
+            hora = datetime.now().strftime('%H:%M %p')
+            self.print_and_talk(f'Son las {hora}')
+
+        elif action == "date": # Fecha actual
+            fecha = datetime.now().strftime('%d/%m/%Y')
+            self.print_and_talk(f'Hoy es {fecha}')
+
+        elif action == "atajo":
+            self.print_and_talk(f'Abriendo atajo {response_ia["number"]}')
+            pyautogui.hotkey('win', response_ia["number"])
+
+        elif action == "open":
+            sitio = response_ia["name"].lower()
+            for dir in addresses:
+                if 'url' in addresses[dir]:
+                    if sitio in [site.lower() for site in addresses[dir]['sitios']]: # Si el sitio está dentro de los preconfigurados
+                        if "http" in addresses[dir]['url']: # Si se intenta abrir un sitio web
+                            webbrowser.open(addresses[dir]["url"])
+                            self.print_and_talk("Hecho")
+                            break
+
+                        elif addresses[dir]['url'].startswith('C:'): # Si se intenta abrir un archivo local (aunque por ahora no le doy uso)
+                            if os.path.exists(addresses[dir]["url"]):
+                                os.startfile(addresses[dir]["url"])
+                                break
+            else:
+                self.print_and_talk(f'El sitio no está preconfigurado')
+
+        elif action == "play_music":
+            if os.path.exists(addresses["canciones"]["url"]):
+                os.startfile(addresses["canciones"]["url"])
+                pyautogui.press('volumedown', 50), pyautogui.press('volumeup', 10) # Para que ponga el volumen al 20%
+                self.print_and_talk('Reproduciendo música')
+            else:
+                webbrowser.open(addresses["sourcecode"]["url"])
+                self.print_and_talk(f'Error: debes colocar un archivo de audio para que yo pueda reproducirlo. Consulta el block de ayuda para más información')
+
+        elif action == "switch_mute":
             pyautogui.hotkey('volumemute')
             self.print_and_talk('Hecho')
 
-        elif 'minimiza' in rec and any(word in rec for word in ['todo', 'toda', 'los', 'las']): # Minimiza todas los programas
-            pyautogui.hotkey('win', 'd')
-            self.print_and_talk('Hecho')
-
-        elif 'minimiza' in rec: # Minimiza el programa actual
+        elif action == "minimize":
             with pyautogui.hold('down'):
                 pyautogui.press(['alt', 'space'])
             time.sleep(0.2)
             pyautogui.press('n')
             self.print_and_talk('Hecho')
 
-        elif 'volumen' in rec and '%' in rec: utils.change_volume(rec, self.print_and_talk) # Cambia el volumen al X%
+        elif action == "minimize_all":
+            pyautogui.hotkey('win', 'd')
+            self.print_and_talk('Hecho')
 
-        elif 'chiste' in rec: self.print_and_talk(pyjokes.get_joke('es', category='all'))
+        elif action == "set_volume":
+            number_string = response_ia["number"]
 
-        elif any(word in rec for word in ['basta', 'apaga', 'apagues']): self.stop() # Apaga al asistente
+            if ',' in number_string:
+                number_string = number_string.split(',')[0]
 
-        elif any(word in rec for word in ['como te llamas', 'cual es tu nombre', 'decime tu nombre']):
+            numero = int(float(number_string))
+            if numero < 0 or numero > 100:
+                self.print_and_talk('El volumen solicitado debe ser un número entero entre 0 y 100')
+            else:
+                half_volume = round(numero/2)
+                pyautogui.press('volumedown', 50)
+                pyautogui.press('volumeup', half_volume)
+                self.print_and_talk(f'Volumen al {2*half_volume} por ciento') # Lo hago así sabiendo que el resultado siempre será par, ya que los botones mueven el valor de volumen de a dos unidades
+
+        elif action == "tell_joke": self.print_and_talk(pyjokes.get_joke('es', category='all'))
+
+        elif action == "ask_name":
             if utils.check_humor(self.humor): utils.play_random_sound(['Excel_preg', 'Marad_ee', 'No_lo_se_tu_dime', 'muy_buena_preg', 'info_vale_millones', 'Uvuewewe'], self.print_and_talk)
             else: self.print_and_talk(f'Me llamo {self.name}')
 
-        elif "tecla " in rec and len(rec.split())-1 >= rec.split().index('tecla')+1: # Si dice la palabra "tecla" en cualquier momento excepto en la palabra final, presiona la tecla pedida luego de esa palabra. Ej: "Presiona la tecla p por favor"
-            utils.key_press(rec, self.print_and_talk)
-
-        elif any(word in rec for word in ['captura de pantalla', 'que estoy viendo', 'capturar pantalla', 'captura la pantalla', 'screenshot', 'capturame la pantalla']): # Saca una captura de pantalla
+        elif action == "screenshot":
             screenshot = pyautogui.screenshot()
             carpeta_contenedora = 'capturas_de_pantalla'
             if not os.path.exists(carpeta_contenedora): os.makedirs(carpeta_contenedora)
@@ -235,15 +290,20 @@ class AssistantApp:
             screenshot.save(f'{carpeta_contenedora}/{now}_screenshot.png')
             self.print_and_talk('Captura guardada')
 
-        elif 'cronometro' in rec and any(word in rec for word in ['inicia', 'comenza', 'comienza', 'para', 'deten']):
-            self.chronometer = utils.chronometer(rec, self.chronometer, self.print_and_talk, self.humor, self.config)
+        elif action == "chronometer":
+            state = response_ia["state"]
+            self.chronometer = utils.chronometer(state, self.chronometer, self.print_and_talk, self.humor, self.config)
 
-        elif 'alarma' in rec: utils.play_sound(rec, self.print_and_talk)
+        elif action == "check_level_humor": self.print_and_talk(f'Nivel de humor al {self.humor}%. Si querés modificarlo consulta las notas de ayuda')
 
-        elif any(word in rec for word in ['humor actual', 'nivel de humor']) and ' al' not in rec: self.print_and_talk(f'Nivel de humor al {self.humor}%. Si querés modificarlo consulta las notas de ayuda')        
+        elif action == "set_level_humor":
+            humor_nuevo_string = response_ia["level"]
 
-        elif 'humor' in rec and '%' in rec:
-            humor_nuevo = utils.get_percentage(rec)
+            if ',' in humor_nuevo_string:
+                humor_nuevo_string = humor_nuevo_string.split(',')[0]
+
+            humor_nuevo = int(float(humor_nuevo_string))
+
             if humor_nuevo == 100:
                 frases = ['Formateo programado para las 22 horas', 'Autodestrucción en t menos 10 segundos', 'Humor al 100%']
                 self.print_and_talk(random.choice(frases))
@@ -255,35 +315,25 @@ class AssistantApp:
                 self.print_and_talk('El nivel de humor se pide en términos porcentuales del 0 al 100')
                 if utils.check_humor(self.humor): utils.play_random_sound(['Ah_re_bolu', 'Estup', 'Imbec'], self.print_and_talk)
 
-        elif any(word in rec for word in ['ayuda', 'no entiendo', 'que cosas puedes hacer', 'que cosas podes hacer', 'que puedes hacer', 'que podes hacer']):
-            webbrowser.open(addresses.addresses["sourcecode"]["url"])
+        elif action == "need_help":
+            webbrowser.open(addresses["sourcecode"]["url"])
             self.print_and_talk('Proporcionando ayuda')
             if utils.check_humor(self.humor): utils.play_random_sound(['buen_servicio'], self.print_and_talk)
 
-        elif 'ver codigo fuente' in rec:
-            webbrowser.open(addresses.addresses["sourcecode"]["url"])
+        elif action == "send_source_code":
+            webbrowser.open(addresses["sourcecode"]["url"])
             self.print_and_talk('Abriendo código fuente')
             if utils.check_humor(self.humor): utils.play_random_sound(['buen_servicio', 'es_bellisimo'], self.print_and_talk)
 
-        elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']): # Para que el ".exe" del asistente se cree o actualice
-            if self.user == 'Ricardo': # Si alguien más aparte de mí accede a este if no hay problema, pero con esto trato de reducir esa posibilidad (me llamo Alejandro pero mi computadora tiene este nombre de usuario)
-                self.humor = utils.change_value(self.config, 'humor', 5)
-                self.print_and_talk('Actualizando asistente')
-                nombreAsistente = 'Asistente_virtual'
-                current_dir = os.getcwd()
-                if os.path.exists(f'{current_dir}/dist'): shutil.rmtree(f'{current_dir}/dist') # Elimina la carpeta dist
-                os.chdir(current_dir) # Línea necesaria para que funcione sin importar si ejecuto esto desde acá o desde GUI.py
-                os.system(f'\
-                pyinstaller --noconsole --name "{nombreAsistente}" --icon=complementos/icon.ico --contents-directory . \
-                --add-data "complementos;complementos" \
-                --add-data "scripts;scripts" \
-                --add-data "config.ini;." \
-                GUI.py') # Esta línea crea el nuevo archivo ejecutable
-                os.remove(f'{current_dir}/{nombreAsistente}.spec')
-                shutil.rmtree(f'{current_dir}/build') # Elimina la carpeta build
-                self.stop()
-        else: return False
-        return True
+        elif action == "ask_weather":
+            webbrowser.open(f'{addresses["google"]["buscador"]}{response_ia["query"]}')
+            self.print_and_talk('Hecho')
+            if utils.check_humor(self.humor): utils.play_random_sound(['buen_servicio'], self.print_and_talk)
+
+        elif action == "too_many_orders":
+            list_orders = response_ia["orders"]
+            for i, order in enumerate(list_orders):
+                self.request(order)
 
     #! Ciclo para hacer que el asistente inicie y no termine nunca a menos que se lo pidamos específicamente
     def start(self):
