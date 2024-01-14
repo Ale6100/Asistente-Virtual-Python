@@ -72,7 +72,8 @@ Como intermediario entre los usuarios y el código de mi asistente virtual, tu t
 
 13. Si pide un chiste:
     {
-        "action": "tell_joke"
+        "action": "tell_joke",
+        "joke": "[genera un chiste]"
     }
 
 14. Si pregunta tu nombre:
@@ -128,16 +129,31 @@ Como intermediario entre los usuarios y el código de mi asistente virtual, tu t
     {
         "action": "order_not_in_list"
     }
-
 Comencemos:"""
 
-def train_ai(): #Entrena a la IA para que entienda qué debe responder en base a lo que le piden
-    # Dejo mi API Key pública para que la gente sin conocimientos pueda usar mi asistente sin tener que solicitar la suya. Genérate una para tí si eres capaz de leer esto, no seas sore-t <3
-    genai.configure(api_key="AIzaSyDEdmfhWYN7yuLHp9N8Iko4ldxWF8Pfpzc")
-    genai.GenerationConfig(candidate_count=0)
+introduccion_informal_chat = """
+Tú eres un asistente virtual.
 
-    model = genai.GenerativeModel('gemini-pro')
-    chat = model.start_chat(history=[])
+A pesar de que naturalmente respondes con texto, ahora tienes la capacidad de hablar con sonido real.
 
-    chat.send_message(introduccion)
-    return chat
+Normalmente tu tarea es ayudar a los usuarios con las dudas que te acerquen, sin embargo, ahora estás en "Modo informal", lo que significa que charlarás con ellos con un dialecto informal.
+Comencemos:"""
+
+def train_ai(informal_chat, print_and_talk): #Entrena a la IA para que entienda qué debe responder en base a lo que le piden
+    try:
+        # Dejo mi API Key pública para que la gente sin conocimientos pueda usar mi asistente sin tener que solicitar la suya. Genérate una para tí si eres capaz de leer esto, no seas sore-t <3
+        genai.configure(api_key="AIzaSyDEdmfhWYN7yuLHp9N8Iko4ldxWF8Pfpzc")
+        genai.GenerationConfig(candidate_count=0)
+
+        model = genai.GenerativeModel('gemini-pro')
+        chat = model.start_chat(history=[])
+
+        if informal_chat:
+            chat.send_message(introduccion_informal_chat)
+        else:
+            chat.send_message(introduccion)
+
+        return chat
+    except Exception as e:
+        print(e)
+        return print_and_talk('Error inesperado. Inténtalo de nuevo más tarde')

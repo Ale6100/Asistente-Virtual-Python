@@ -9,7 +9,6 @@ from datetime import datetime
 import os
 from scripts.addresses import addresses
 import webbrowser
-import pyjokes
 import random
 import shutil
 from scripts.train_ai import train_ai
@@ -28,8 +27,9 @@ class AssistantApp:
         self.humor = self.config.getint('Assistant', 'humor', fallback=5) # Porcentaje de humor al n%. Significa que va a poner un audio "gracioso" el n% de las veces en los pedidos que tengan humor configurado
         self.configAudio()
         self.q = q
+        self.informal_chat = self.config.getint('Assistant', 'informal_chat', fallback=0)
         self.print_('Encendido')
-        self.chat = train_ai()
+        self.chat = train_ai(self.informal_chat, self.print_and_talk)
         self.start()
         self.print_('Detenido')
 
@@ -84,6 +84,7 @@ class AssistantApp:
 
     def recognise_speech_and_pass_it_to_text(self, connection_failures = 0):
         self.attempts += 1
+        if (not self.informal_chat) and (self.attempts % 100 == 0): self.chat = train_ai(self.informal_chat, self.print_and_talk) # Reinicia la IA cada 100 escuchas, siempre y cuando estemos en un chat formal
         try:
             with sr.Microphone() as source: # Abrimos el micrófono como fuente de entrada de audio
                 listener = sr.Recognizer()
@@ -122,8 +123,12 @@ class AssistantApp:
                 if utils.check_humor(self.humor): return utils.play_random_sound(['wazaa', 'hello_m_f'], self.print_and_talk)
                 return self.print_and_talk('hola')
 
+            if any(word == rec.split(' ')[-1] for word in ['basta', 'apaga', 'apagues']): self.stop() # Apaga al asistente. La palabra "basta" debe decirse al final (o alguna variante similar)
+
+            if self.informal_chat: # Si estamos en un chat informal, ignoramos los pedidos
+                return self.print_and_talk(utils.process_with_natural_language_informal_talk(rec, self.chat))
+
             response_ia = utils.process_with_natural_language(rec, self.chat)
-            print(f'response_ia["action"]:\n{response_ia["action"]}\n')
 
             if self.order_without_ia(rec): None
 
@@ -144,8 +149,6 @@ class AssistantApp:
         elif any(word in rec for word in ['cierr', 'cerra']) and any(word in rec for word in ['ventana', 'programa', 'archivo']):
             pyautogui.hotkey('alt', 'F4')
             self.print_and_talk('Hecho')
-
-        elif any(word == rec.split(' ')[-1] for word in ['basta', 'apaga', 'apagues']): self.stop() # Apaga al asistente. La palabra "basta" debe decirse al final (o alguna variante similar)
 
         elif "tecla " in rec and len(rec.split())-1 >= rec.split().index('tecla')+1: # Si dice la palabra "tecla" en cualquier momento excepto en la palabra final, presiona la tecla pedida luego de esa palabra. Ej: "Presiona la tecla p por favor"
             utils.key_press(rec, self.print_and_talk)
@@ -186,7 +189,7 @@ class AssistantApp:
                 time.sleep(5)
                 pyautogui.hotkey('enter')
                 self.print_and_talk("Hecho")
-            else: #! Ver qué hacer cuando se pide buscar en un sitio que no está preconfigurado
+            else:
                 for dir in addresses: # Busca en el sitio solicitado la búsqueda solicitada
                     if 'buscador' in addresses[dir]:
                         if name.lower() in [dir.lower() for dir in addresses[dir]['sitios']]:
@@ -276,7 +279,7 @@ class AssistantApp:
                 pyautogui.press('volumeup', half_volume)
                 self.print_and_talk(f'Volumen al {2*half_volume} por ciento') # Lo hago así sabiendo que el resultado siempre será par, ya que los botones mueven el valor de volumen de a dos unidades
 
-        elif action == "tell_joke": self.print_and_talk(pyjokes.get_joke('es', category='all'))
+        elif action == "tell_joke": self.print_and_talk(response_ia["joke"])
 
         elif action == "ask_name":
             if utils.check_humor(self.humor): utils.play_random_sound(['Excel_preg', 'Marad_ee', 'No_lo_se_tu_dime', 'muy_buena_preg', 'info_vale_millones', 'Uvuewewe'], self.print_and_talk)

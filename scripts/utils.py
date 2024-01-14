@@ -97,3 +97,7 @@ def process_with_natural_language(rec: str, chat):
         return json.loads(response_ia.text)
     except:
         return json.loads('{ "action": "none" }')
+
+def process_with_natural_language_informal_talk(rec: str, chat):
+    response_ia = chat.send_message(rec)
+    return response_ia.text
