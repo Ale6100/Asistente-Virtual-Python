@@ -1,5 +1,4 @@
-import webbrowser
-from scripts.addresses import addresses, dir_mixer
+from scripts.addresses import dir_mixer
 import pyautogui
 import time
 import numpy as np
@@ -8,6 +7,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 from pygame import mixer
 import random
 import json
+from scripts.train_ai import safety_settings
 
 def key_press(rec: str, print_and_talk):
     rec_array = rec.split()
@@ -92,12 +92,12 @@ def change_value(config, clave: str, valor: int | float): # Modifica el valor de
     return valor
 
 def process_with_natural_language(rec: str, chat):
-    response_ia = chat.send_message(rec)
+    response_ia = chat.send_message(rec, safety_settings=safety_settings)
     try: # En caso de que la respuesta no sea un json, tal como lo especifiqué
         return json.loads(response_ia.text)
     except:
         return json.loads('{ "action": "none" }')
 
 def process_with_natural_language_informal_talk(rec: str, chat):
-    response_ia = chat.send_message(rec)
+    response_ia = chat.send_message(rec, safety_settings=safety_settings)
     return response_ia.text

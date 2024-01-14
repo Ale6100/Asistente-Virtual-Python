@@ -1,5 +1,24 @@
 import google.generativeai as genai
 
+safety_settings = [ # Para quitarle la censura a la IA
+    {
+        "category": "HARM_CATEGORY_HARASSMENT",
+        "threshold": "BLOCK_NONE"
+    },
+    {
+        "category": "HARM_CATEGORY_HATE_SPEECH",
+        "threshold": "BLOCK_NONE"
+    },
+    {
+        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        "threshold": "BLOCK_NONE"
+    },
+    {
+        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+        "threshold": "BLOCK_NONE"
+    }
+]
+
 introduccion = """
 Como intermediario entre los usuarios y el código de mi asistente virtual, tu tarea es responder específica y exclusivamente a lo que te indique a continuación, según la frase del usuario:
 
@@ -149,9 +168,9 @@ def train_ai(informal_chat, print_and_talk): #Entrena a la IA para que entienda 
         chat = model.start_chat(history=[])
 
         if informal_chat:
-            chat.send_message(introduccion_informal_chat)
+            chat.send_message(introduccion_informal_chat, safety_settings=safety_settings)
         else:
-            chat.send_message(introduccion)
+            chat.send_message(introduccion, safety_settings=safety_settings)
 
         return chat
     except Exception as e:

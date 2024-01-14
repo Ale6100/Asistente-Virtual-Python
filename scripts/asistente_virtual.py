@@ -202,7 +202,7 @@ class AssistantApp:
         elif action == "program_order":
             minutes_string = response_ia["minutes"]
 
-            if ',' in minutes_string:
+            if type(minutes_string) == "string" and ',' in minutes_string:
                 minutes_string = minutes_string.split(',')[0]
 
             threading.Timer(int(float(minutes_string))*60, lambda: self.request(response_ia["order"])).start() # Ejecuta el pedido en la cantidad de minutos que hayamos especificado
@@ -267,10 +267,11 @@ class AssistantApp:
         elif action == "set_volume":
             number_string = response_ia["number"]
 
-            if ',' in number_string:
+            if type(number_string) == "string" and type(number_string) == "string" and ',' in number_string:
                 number_string = number_string.split(',')[0]
 
             numero = int(float(number_string))
+
             if numero < 0 or numero > 100:
                 self.print_and_talk('El volumen solicitado debe ser un número entero entre 0 y 100')
             else:
@@ -302,7 +303,7 @@ class AssistantApp:
         elif action == "set_level_humor":
             humor_nuevo_string = response_ia["level"]
 
-            if ',' in humor_nuevo_string:
+            if type(humor_nuevo_string) == "string" and ',' in humor_nuevo_string:
                 humor_nuevo_string = humor_nuevo_string.split(',')[0]
 
             humor_nuevo = int(float(humor_nuevo_string))
