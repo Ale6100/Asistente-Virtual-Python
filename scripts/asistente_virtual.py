@@ -1,35 +1,37 @@
+import configparser
+import os
+import shutil
+import threading
+import time
+from datetime import datetime
+import random
+import webbrowser
+
+import pyautogui
 import pyttsx3 # Conversión de texto a voz
 import speech_recognition as sr # Reconocimiento de voz
-import time
+
 import scripts.utils as utils
-import configparser
-import threading
-import pyautogui
-from datetime import datetime
-import os
 from scripts.addresses import addresses
-import webbrowser
-import random
-import shutil
-from scripts.train_ai import train_ai
 
 class AssistantApp:
+    RECOGNITION_ERROR = '--error--'
+    config = configparser.ConfigParser()
+
     def __init__(self, q, stop_event):
         self.stop_event = stop_event
-        self.config = configparser.ConfigParser()
+        self.q = q
         self.config.read('config.ini')
-        self.user = os.environ.get('USERNAME') or os.environ.get('USER') # El usuario de tu PC actual
         self.name = self.config.get('Assistant', 'name', fallback='okay') # Le definimos un nombre al asistente, o simplemente una palabra clave que hace que se active
         self.chronometer = self.config.getfloat('Assistant', 'chronometer', fallback=0)
+        self.humor = self.config.getint('Assistant', 'humor', fallback=5) # Porcentaje de humor al n%. Significa que va a poner un audio "gracioso" el n% de las veces en los pedidos que tengan humor configurado
+        self.informal_chat = self.config.getint('Assistant', 'informal_chat', fallback=0)
+        self.user = os.environ.get('USERNAME') or os.environ.get('USER') # El usuario de tu PC actual
         self.continue_ = True
         self.attempts = 0
-        self.RECOGNITION_ERROR = '--error--'
-        self.humor = self.config.getint('Assistant', 'humor', fallback=5) # Porcentaje de humor al n%. Significa que va a poner un audio "gracioso" el n% de las veces en los pedidos que tengan humor configurado
         self.configAudio()
-        self.q = q
-        self.informal_chat = self.config.getint('Assistant', 'informal_chat', fallback=0)
-        self.print_('Encendido')
         self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+        self.print_('Encendido')
         self.start()
         self.print_('Detenido')
 
@@ -210,7 +212,7 @@ class AssistantApp:
         elif action == "program_order":
             minutes_string = response_ia["minutes"]
 
-            if type(minutes_string) == "string" and ',' in minutes_string:
+            if isinstance(minutes_string, str) and (',' in minutes_string):
                 minutes_string = minutes_string.split(',')[0]
 
             threading.Timer(int(float(minutes_string))*60, lambda: self.request(response_ia["order"])).start() # Ejecuta el pedido en la cantidad de minutos que hayamos especificado
@@ -272,7 +274,7 @@ class AssistantApp:
         elif action == "set_volume":
             number_string = response_ia["number"]
 
-            if type(number_string) == "string" and type(number_string) == "string" and ',' in number_string:
+            if isinstance(number_string, str) and (',' in number_string):
                 number_string = number_string.split(',')[0]
 
             numero = int(float(number_string))
@@ -308,7 +310,7 @@ class AssistantApp:
         elif action == "set_level_humor":
             humor_nuevo_string = response_ia["level"]
 
-            if type(humor_nuevo_string) == "string" and ',' in humor_nuevo_string:
+            if isinstance(humor_nuevo_string, str) and (',' in humor_nuevo_string):
                 humor_nuevo_string = humor_nuevo_string.split(',')[0]
 
             humor_nuevo = int(float(humor_nuevo_string))
@@ -339,15 +341,23 @@ class AssistantApp:
             self.print_and_talk('Hecho')
             if utils.check_humor(self.humor): utils.play_random_sound(['buen_servicio'], self.print_and_talk)
 
+        elif action == "multiple_orders":
+            orders_string = response_ia["orders"]
+
+            if isinstance(orders_string, str) and (';' in orders_string):
+                list_orders = orders_string.split(';')
+                for i, order in enumerate(list_orders):
+                    self.request(order)
+            else:
+                self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+                self.print_and_talk('No te entendi')
+
         elif action == "response":
             self.print_and_talk(response_ia["text"])
 
-        elif action == "multiple_orders":
-            list_orders = response_ia["orders"].split(';')
-            for i, order in enumerate(list_orders):
-                self.request(order)
         else: # No debería llegar nunca acá. Si eso sucede, es porque se está inventando cosas
             self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+            self.print_and_talk('No te entendi')
 
     #! Ciclo para hacer que el asistente inicie y no termine nunca a menos que se lo pidamos específicamente
     def start(self):

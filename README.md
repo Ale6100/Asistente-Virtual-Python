@@ -6,7 +6,9 @@ Bienvenido! este es mi primer asistente creado con Python. Hace un tiempo hice u
 
 Mi objetivo con este proyecto es lograr que el asistente sea lo suficientemente útil como para que desees utilizarlo a diaro, sabiendo que lo puedes dejar encendido en segundo plano para que esté listo en cualquier momento que lo necesites.
 
-`Importante`: El asistente ha sido testeado en un entorno con Windows 11 de 64 bits, no puedo garantizar su correcto funcionamiento en otros casos.
+`Nota 1`: Esto no es un Chat GPT con audio. La filosofía de este proyecto que inició en el 2020 es que el asistente pueda acatar pedidos de manera interactiva en tu computadora. Para más detalle, ve la tabla que está más abajo.
+
+`Nota 2`: El asistente ha sido testeado en un entorno con Windows 11 de 64 bits, no puedo garantizar su correcto funcionamiento en otros casos.
 
 ## Guía para usuarios 🧑‍💻
 ### Descarga ⬇️

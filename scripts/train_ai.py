@@ -154,7 +154,9 @@ Hice un asistente virtual capaz de acatar pedidos. Tu responsabilidad como inter
 Es muy importante que no te inventes datos. El algoritmo dará error si no sigues estas reglas.
 Comencemos:'''
 
-name = configparser.ConfigParser().get('Assistant', 'name', fallback='okay')
+config = configparser.ConfigParser()
+
+name = config.get('Assistant', 'name', fallback='okay')
 
 introduccion_informal_chat = f"""
 Contexto:

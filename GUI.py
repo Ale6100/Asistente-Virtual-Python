@@ -10,14 +10,17 @@ import os
 import signal
 
 class AssistantGui:
+    CONFIG_FILE = 'config.ini'
+    CONFIG_SECTION = 'Assistant'
+
     def __init__(self):
         self.config = configparser.ConfigParser()
-        self.config.read('config.ini')
-        self.name = self.config.get('Assistant', 'name', fallback='okay')
+        self.config.read(self.CONFIG_FILE)
+        self.name = self.config.get(self.CONFIG_SECTION, 'name', fallback='okay')
         self.q = Queue()
         self.stop_event = None
         self.window_open = True
-        self.informal_chat = self.config.getint('Assistant', 'informal_chat', fallback=0)
+        self.informal_chat = self.config.getint(self.CONFIG_SECTION, 'informal_chat', fallback=0)
         self.create_gui()
 
     def create_gui(self):
@@ -114,8 +117,8 @@ class AssistantGui:
     #? ----- métodos auxiliares -----
 
     def change_value(self, clave: str, valor: str):
-        self.config.set('Assistant', clave, valor)
-        with open('config.ini', 'w') as f:
+        self.config.set(self.CONFIG_SECTION, clave, valor)
+        with open(self.CONFIG_FILE, 'w') as f:
             self.config.write(f)
 
     def save_name(self):
