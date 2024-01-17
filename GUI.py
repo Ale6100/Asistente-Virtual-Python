@@ -30,7 +30,7 @@ class AssistantGui:
 
         self.root.protocol("WM_DELETE_WINDOW", self.close_window)
 
-        self.intro_label = tk.Label(self.root, text=f'El asistente se llama "{self.name}". Modo informal' if self.informal_chat else f'Tu asistente se llama "{self.name}". Pídele algo')
+        self.intro_label = tk.Label(self.root, text=f'El asistente se llama "{self.name}". Modo conversacional' if self.informal_chat else f'Tu asistente se llama "{self.name}". Pídele algo')
         self.intro_label.grid(row = 0, column = 0, columnspan = 6, pady=5)
         self.intro_label.config(font=(None, 9, 'bold'))
 
@@ -67,7 +67,7 @@ class AssistantGui:
         self.save_humor_button = tk.Button(self.root, text="Guardar", command=self.save_humor)
         self.save_humor_button.grid(row= 6, column = 4, columnspan = 2)
 
-        self.change_informal_mode_button = tk.Button(self.root, text="Desactivar modo informal" if self.informal_chat else "Activar modo informal", command=self.change_informal_mode, bg='orange' if self.informal_chat else 'white')
+        self.change_informal_mode_button = tk.Button(self.root, text="Desactivar modo conversacional" if self.informal_chat else "Activar modo conversacional", command=self.change_informal_mode, bg='orange' if self.informal_chat else 'white')
         self.change_informal_mode_button.grid(row= 7, column = 1, columnspan = 3)
 
         self.help_button = tk.Button(self.root, text="Ayuda", command=lambda: webbrowser.open(addresses.addresses["sourcecode"]["url"]))
@@ -172,12 +172,12 @@ class AssistantGui:
         if self.informal_chat:
             self.informal_chat = 0
             self.intro_label['text'] = f'Tu asistente se llama "{self.name}". Pídele algo'
-            self.change_informal_mode_button['text'] = 'Activar modo informal'
+            self.change_informal_mode_button['text'] = 'Activar modo conversacional'
             self.change_informal_mode_button.config(bg='white')
         else:
             self.informal_chat = 1
-            self.intro_label['text'] = f'Tu asistente se llama "{self.name}". Modo informal'
-            self.change_informal_mode_button['text'] = 'Desactivar modo informal'
+            self.intro_label['text'] = f'Tu asistente se llama "{self.name}". Modo conversacional'
+            self.change_informal_mode_button['text'] = 'Desactivar modo conversacional'
             self.change_informal_mode_button.config(bg='orange')
 
         self.change_value('informal_chat', str(self.informal_chat))

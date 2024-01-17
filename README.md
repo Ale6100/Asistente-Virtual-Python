@@ -32,7 +32,7 @@ _Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la últ
 
     * Todas los pedidos deben iniciar con el nombre del asistente. Por defecto se llama "Okay" por simplicidad (puedes decir "Okey" también, ya que lo interpreta como "Okay"). Por ejemplo: `Okay, abrir Twitter`
 
-    * Con un botón en la interfaz puedes activar y desactivar el **Modo informal** (de manera predeterminada viene desactivado), donde el asistente no acatará pedidos, si no que simplemente conversará sobre los temas que desees. Cuando hablas con este modo también es necesario iniciar con el nombre del asistente. Este botón estará habilitado únicamente cuando el asistente esté detenido.
+    * Con un botón en la interfaz puedes activar y desactivar el **Modo conversacional** (de manera predeterminada viene desactivado), donde el asistente no acatará pedidos, si no que simplemente conversará sobre los temas que desees. Cuando hablas con este modo también es necesario iniciar con el nombre del asistente. Este botón estará habilitado únicamente cuando el asistente esté detenido.
 
     * Pedido encapsulado: Para mejorar el entendimiento, opcionalmente puedes decir su nombre por segunda vez en un mismo pedido. En este caso, el asistente interpretará que el pedido está en medio de la primera y la segunda vez que lo nombraste. Por ejemplo, si dices `bla bla bla Okay, abrir Twitter Okay bla bla bla`, el pedido será `abrir Twitter`
 
