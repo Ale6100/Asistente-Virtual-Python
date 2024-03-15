@@ -93,7 +93,7 @@ También es posible hacerle varios pedidos al mismo tiempo!
 
 ### Pre-requisitos 📋
 
-El código está hecho y testeado utilizando la versión 3.12.0 de Python y un Windows 11 de 64bits.
+El código está hecho y testeado utilizando la versión 3.12.2 de Python y un Windows 11 de 64bits.
 
 ### Descarga el código ⬇️
 
