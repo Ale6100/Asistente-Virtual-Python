@@ -17,6 +17,7 @@ from scripts.addresses import addresses
 class AssistantApp:
     RECOGNITION_ERROR = '--error--'
     config = configparser.ConfigParser()
+    MESSAGE_DONTKNOW = 'No te entendi'
 
     def __init__(self, q, stop_event):
         self.stop_event = stop_event
@@ -29,14 +30,14 @@ class AssistantApp:
         self.user = os.environ.get('USERNAME') or os.environ.get('USER') # El usuario de tu PC actual
         self.continue_ = True
         self.attempts = 0
-        self.configAudio()
+        self.configaudio()
         self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
         self.print_('Encendido')
         self.start()
         self.print_('Detenido')
 
     #! Configuración de audio
-    def configAudio(self):
+    def configaudio(self):
         self.engine = pyttsx3.init() # Inicializamos el motor de voz
         self.engine.setProperty('rate', 145) # Velocidad del asistente al hablar
         self.engine.setProperty('volume', 1.0) # Volumen del asistente
@@ -134,7 +135,7 @@ class AssistantApp:
 
             if response_ia["action"] == "none": # Esto no debería suceder nunca. Si sucede, es porque se está inventando cosas
                 self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
-                return self.print_and_talk('No te entendi')
+                return self.print_and_talk(self.MESSAGE_DONTKNOW)
 
             if self.order_without_ia(rec): None
 
@@ -145,7 +146,7 @@ class AssistantApp:
                 if 100 * random.random() < 20: # Una de cada cinco veces te da una respuesta más larga
                     self.print_and_talk('No te entendí. Es posible que el pedido no esté preconfigurado')
                 else:
-                    self.print_and_talk('No te entendí')
+                    self.print_and_talk(self.MESSAGE_DONTKNOW)
         except Exception as e:
             self.print_and_talk('Error desconocido') # Si hay un error no previsto, dice "Error desconocido", muestra el error y vuelve al while original
             self.print_(f'Error:\n{e}')
@@ -165,21 +166,21 @@ class AssistantApp:
 
         elif 'alarma' == rec.split()[-1]: utils.play_sound(rec, self.print_and_talk) # Si "alarma" se dice al final
 
-        elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']) and self.user == 'Ricardo': # Para que el ".exe" del asistente se cree o actualice
+        elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']) and (self.user == 'Ricardo' or self.user == 'aportaluppi'): # Para que el ".exe" del asistente se cree o actualice
             # Si alguien más aparte de mí accede a este if no hay problema, pero con esto trato de reducir esa posibilidad (me llamo Alejandro pero mi computadora tiene este nombre de usuario)
             self.humor = utils.change_value(self.config, 'humor', 5)
             self.print_and_talk('Actualizando asistente')
-            nombreAsistente = 'Asistente_virtual'
+            asistente_virtual = 'Asistente_virtual'
             current_dir = os.getcwd()
             if os.path.exists(f'{current_dir}/dist'): shutil.rmtree(f'{current_dir}/dist') # Elimina la carpeta dist
             os.chdir(current_dir) # Línea necesaria para que funcione sin importar si ejecuto esto desde acá o desde GUI.py
             os.system(f'\
-            pyinstaller --noconsole --name "{nombreAsistente}" --icon=complementos/icon.ico --contents-directory . \
+            pyinstaller --noconsole --name "{asistente_virtual}" --icon=complementos/icon.ico --contents-directory . \
             --add-data "complementos;complementos" \
             --add-data "scripts;scripts" \
             --add-data "config.ini;." \
             GUI.py') # Esta línea crea el nuevo archivo ejecutable
-            os.remove(f'{current_dir}/{nombreAsistente}.spec')
+            os.remove(f'{current_dir}/{asistente_virtual}.spec')
             shutil.rmtree(f'{current_dir}/build') # Elimina la carpeta build
             self.stop()
         else: return False
@@ -204,10 +205,10 @@ class AssistantApp:
                     if 'buscador' in addresses[dir]:
                         if site in [dir.lower() for dir in addresses[dir]['sitios']]:
                             webbrowser.open(f'{addresses[dir]["buscador"]}{query}')
-                            self.print_and_talk("Hecho")
+                            self.print_and_talk("Buscando")
                             break
                 else:
-                    self.print_and_talk(f'El sitio no está preconfigurado')
+                    self.print_and_talk('El sitio no está preconfigurado')
 
         elif action == "program_order":
             minutes_string = response_ia["minutes"]
@@ -245,7 +246,7 @@ class AssistantApp:
                                 os.startfile(addresses[dir]["url"])
                                 break
             else:
-                self.print_and_talk(f'El sitio no está preconfigurado')
+                self.print_and_talk('El sitio no está preconfigurado')
 
         elif action == "play_music":
             if os.path.exists(addresses["canciones"]["url"]):
@@ -254,7 +255,7 @@ class AssistantApp:
                 self.print_and_talk('Reproduciendo música')
             else:
                 webbrowser.open(addresses["sourcecode"]["url"])
-                self.print_and_talk(f'Error: debes colocar un archivo de audio para que yo pueda reproducirlo. Consulta el block de ayuda para más información')
+                self.print_and_talk('Error: debes colocar un archivo de audio para que yo pueda reproducirlo. Consulta el block de ayuda para más información')
 
         elif action == "switch_mute":
             pyautogui.hotkey('volumemute')
@@ -295,7 +296,7 @@ class AssistantApp:
 
         elif action == "screenshot":
             screenshot = pyautogui.screenshot()
-            carpeta_contenedora = 'capturas_de_pantalla'
+            carpeta_contenedora = 'screenshots'
             if not os.path.exists(carpeta_contenedora): os.makedirs(carpeta_contenedora)
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S").replace(' ', '_').replace(':', '_')
             screenshot.save(f'{carpeta_contenedora}/{now}_screenshot.png')
@@ -350,14 +351,14 @@ class AssistantApp:
                     self.request(order)
             else:
                 self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
-                self.print_and_talk('No te entendi')
+                self.print_and_talk(self.MESSAGE_DONTKNOW)
 
         elif action == "response":
             self.print_and_talk(response_ia["text"])
 
         else: # No debería llegar nunca acá. Si eso sucede, es porque se está inventando cosas
             self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
-            self.print_and_talk('No te entendi')
+            self.print_and_talk(self.MESSAGE_DONTKNOW)
 
     #! Ciclo para hacer que el asistente inicie y no termine nunca a menos que se lo pidamos específicamente
     def start(self):

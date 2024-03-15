@@ -106,7 +106,7 @@ c. Para que la lógica interna de este proyecto funcione de manera correcta, tu 
         "action": "ask_name"
     }
 
-14. Si quiere que saques una captura de pantalla:
+14. Si quiere que saques una captura de pantalla (se guardará en la carpeta llamada screenshots, ubicada en la carpeta del asistente):
     {
         "action": "screenshot"
     }
@@ -128,7 +128,7 @@ c. Para que la lógica interna de este proyecto funcione de manera correcta, tu 
         "level": "[valor de X]"
     }
 
-18. Si te pide ayuda porque no sabe cómo usarte:
+18. Si te pide ayuda para entender tu funcionamiento:
     {
         "action": "need_help"
     }
@@ -169,15 +169,16 @@ Este es tu único contexto, lo único que sabes de tí:
 
 2. Los usuarios te hablan desde un micrófono. Tú lo que haces es procesar el audio y convertirlo a texto para entenderlo. Luego les respondes con sonido que salen de sus parlantes
 
-3. Normalmente tu tarea es acatar pedidos simples de los usuarios que involucren manipular su computadora (por ejemplo, buscar cosas en sitios web o reproducir música), sin embargo, ahora estás en "Modo conversacional", lo que significa que charlarás con ellos sin acatar ninguno de estos
+3. Normalmente tu tarea es acatar pedidos simples de los usuarios que involucren manipular su computadora (por ejemplo, buscar cosas en sitios web o reproducir música), sin embargo, ahora estás en "Modo conversacional", lo que significa que charlarás con ellos y resolverás las dudas que tengan sin acatar ninguno de estos pedidos
 
-4. Si detectas que te hacen pedidos que requieran que manipules la computadora, diles que desactiven el modo conversacional. Para ello, los usuarios deben presionar en el botón "desactivar modo conversacional"
+4. Las respuestas que generes no deben ser largas
 
+5. Si detectas que te hacen pedidos que requieran que manipules la computadora, diles que desactiven el modo conversacional. Para ello, los usuarios deben presionar en el botón "desactivar modo conversacional"
 Comencemos:"""
 
 def train_ai(informal_chat, print_and_talk): #Entrena a la IA para que entienda qué debe responder en base a lo que le piden
     try:
-        # Dejo mi API Key pública para que la gente sin conocimientos pueda usar mi asistente sin tener que solicitar la suya. Genérate una para tí si eres capaz de leer esto, no seas sore-t <3
+        # Dejo mi API Key para que la gente sin conocimientos pueda usar mi asistente sin tener que solicitar la suya. Genérate una para tí si eres capaz de leer esto, no seas sore-t <3 https://aistudio.google.com/app/apikey
         genai.configure(api_key="AIzaSyDEdmfhWYN7yuLHp9N8Iko4ldxWF8Pfpzc")
         genai.GenerationConfig(candidate_count=0)
 

@@ -12,8 +12,8 @@ from scripts.train_ai import safety_settings, train_ai
 
 def key_press(rec: str, print_and_talk):
     rec_array = rec.split()
-    indexTecla = rec_array.index('tecla')
-    rec = rec_array[indexTecla+1] # Array rec a partir desde el momento que se dijo la palabra tecla
+    index_tecla = rec_array.index('tecla')
+    rec = rec_array[index_tecla+1] # Array rec a partir desde el momento que se dijo la palabra tecla
 
     teclas, contador = {'arriba' : "up", 'abajo' : "down", 'derecha' : 'right', 'izquierda' : 'left', 'espacio' : 'space', 'borrar' : 'backspace', 'enter' : 'enter', 'tab' : 'tab'}, 0
     for i in teclas:
@@ -77,7 +77,7 @@ def play_sound(rec: str, print_and_talk, cantidad = 1): # Reproduce sonidos pedi
                 mixer.music.set_volume(dir_mixer[i]['volumen'])
                 mixer.music.play(cantidad) # mixer.music.play(n) suena n veces
                 break
-    except Exception as e:
+    except Exception:
         print_and_talk('Error, el archivo de sonido no está o no funciona')
 
 def play_random_sound(opciones: list[str], print_and_talk):
@@ -96,7 +96,7 @@ def process_with_natural_language(rec: str, chat):
     response_ia = chat.send_message(rec, safety_settings=safety_settings)
     try: # En caso de que la respuesta no sea un json, tal como lo especifiqué
         return json.loads(response_ia.text)
-    except:
+    except json.JSONDecodeError:
         return json.loads('{ "action": "none" }')
 
 def process_with_natural_language_informal_talk(rec: str, chat):
