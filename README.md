@@ -1,6 +1,8 @@
 # Asistente virtual con Python
 
-> Ahora impulsado con IA!
+> 11/04/24: Deshabilitado temporalmente debido a problemas con la API Key de Gemini. No te preocupes! Hasta que resuelva esto puedes colocar la tuya en [train_ai.py](./scripts/train_ai.py) si deseas probar al asistente
+
+Ahora impulsado con IA!
 
 Bienvenido! este es mi primer asistente creado con Python. Hace un tiempo hice uno con JavaScript [aquí](https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
 
@@ -93,7 +95,7 @@ También es posible hacerle varios pedidos al mismo tiempo!
 
 ### Pre-requisitos 📋
 
-El código está hecho y testeado utilizando la versión 3.12.2 de Python y un Windows 11 de 64bits.
+El código está hecho y testeado utilizando la versión 3.12.3 de Python y un Windows 11 de 64bits.
 
 ### Descarga el código ⬇️
 

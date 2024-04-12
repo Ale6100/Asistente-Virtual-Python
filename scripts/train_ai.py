@@ -178,8 +178,7 @@ Comencemos:"""
 
 def train_ai(informal_chat, print_and_talk): #Entrena a la IA para que entienda qué debe responder en base a lo que le piden
     try:
-        # Dejo mi API Key para que la gente sin conocimientos pueda usar mi asistente sin tener que solicitar la suya. Genérate una para tí si eres capaz de leer esto, no seas sore-t <3 https://aistudio.google.com/app/apikey
-        genai.configure(api_key="AIzaSyDEdmfhWYN7yuLHp9N8Iko4ldxWF8Pfpzc")
+        genai.configure(api_key="") # Coloca aquí tu API Key
         genai.GenerationConfig(candidate_count=0)
 
         model = genai.GenerativeModel('gemini-pro')

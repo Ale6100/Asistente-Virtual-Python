@@ -166,8 +166,8 @@ class AssistantApp:
 
         elif 'alarma' == rec.split()[-1]: utils.play_sound(rec, self.print_and_talk) # Si "alarma" se dice al final
 
-        elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']) and (self.user == 'Ricardo' or self.user == 'aportaluppi'): # Para que el ".exe" del asistente se cree o actualice
-            # Si alguien más aparte de mí accede a este if no hay problema, pero con esto trato de reducir esa posibilidad (me llamo Alejandro pero mi computadora tiene este nombre de usuario)
+        elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']) and self.user: # Para que el ".exe" del asistente se cree o actualice
+            # Si alguien más aparte de mí accede a este if no hay problema, pero con esto trato de reducir esa posibilidad
             self.humor = utils.change_value(self.config, 'humor', 5)
             self.print_and_talk('Actualizando asistente')
             asistente_virtual = 'Asistente_virtual'
