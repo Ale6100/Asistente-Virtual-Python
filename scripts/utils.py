@@ -7,6 +7,8 @@ import numpy as np
 from pygame import mixer
 import pyautogui
 
+from google.generativeai import ChatSession
+
 from scripts.addresses import dir_mixer
 from scripts.train_ai import safety_settings, train_ai
 
@@ -92,14 +94,14 @@ def change_value(config, clave: str, valor: int | float): # Modifica el valor de
         config.write(f)
     return valor
 
-def process_with_natural_language(rec: str, chat):
+def process_with_natural_language(rec: str, chat: ChatSession):
     response_ia = chat.send_message(rec, safety_settings=safety_settings)
     try: # En caso de que la respuesta no sea un json, tal como lo especifiqué
         return json.loads(response_ia.text)
     except json.JSONDecodeError:
         return json.loads('{ "action": "none" }')
 
-def process_with_natural_language_informal_talk(rec: str, chat):
+def process_with_natural_language_informal_talk(rec: str, chat: ChatSession):
     response_ia = chat.send_message(rec, safety_settings=safety_settings)
     return response_ia.text
 

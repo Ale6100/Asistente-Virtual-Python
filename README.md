@@ -1,6 +1,6 @@
 # Asistente virtual con Python
 
-> 11/04/24: Deshabilitado temporalmente debido a problemas con la API Key de Gemini. No te preocupes! Hasta que resuelva esto puedes colocar la tuya en [train_ai.py](./scripts/train_ai.py) si deseas probar al asistente
+> 11/04/24: Deshabilitado temporalmente debido a problemas con la API Key de Gemini. No te preocupes! Si eres programador, hasta que resuelva este problema puedes colocar la tuya en [train_ai.py](./scripts/train_ai.py) si deseas probar al asistente
 
 Ahora impulsado con IA!
 
@@ -121,7 +121,7 @@ A continuación, instala las dependencias con el comando
 pip install -r requirements.txt
 ```
 
-Recuerda que debes activar el entorno virtual siempre que desees usarlo
+**Recuerda que debes activar el entorno virtual siempre que desees usarlo**
 
 ### Modificación 🛠️
 
@@ -134,7 +134,7 @@ Si deseas modificar al asistente, considera que:
   * Carpeta [scripts](./scripts) - Archivos python de apoyo
   * Carpeta [complementos](./complementos) - Recursos complementarios
   * [config.ini](./config.ini) - Archivo donde guardo configuración dinámica y persistente del asistente
-  * [train_ai.py](./scripts/train_ai.py) - Aquí entreno a la IA para que entienda la estructura de la mayoría de los pedidos
+  * [scripts/train_ai.py](./scripts/train_ai.py) - Aquí entreno a la IA para que entienda la estructura de la mayoría de los pedidos
 
 * Una vez que estés conforme con tus cambios, coloca en la terminal el comando:
 
@@ -148,7 +148,7 @@ para compilar el proyecto en la carpeta dist. Asegúrate de haber eliminado (o v
 
 ### Despliegue 📦
 
-Podrás iniciar el asistente ejecutando [GUI.py](GUI.py)
+Podrás iniciar el asistente ejecutando [GUI.py](GUI.py) o abriendo el archivo compilado [dist/Asistente_virtual/Asistente_virtual.exe](/dist/Asistente_virtual/Asistente_virtual.exe) en caso de que lo tengas creado
 
 ## Autor ✒️
 
