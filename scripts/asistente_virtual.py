@@ -6,6 +6,9 @@ import time
 from datetime import datetime
 import random
 import webbrowser
+from multiprocessing import Queue
+from tkinter import messagebox
+from threading import Event
 
 import pyautogui
 import pyttsx3 # Conversión de texto a voz
@@ -19,7 +22,7 @@ class AssistantApp:
     config = configparser.ConfigParser()
     MESSAGE_DONTKNOW = 'No te entendi'
 
-    def __init__(self, q, stop_event):
+    def __init__(self, q: Queue, stop_event: Event, api_key: str):
         self.stop_event = stop_event
         self.q = q
         self.config.read('config.ini')
@@ -28,10 +31,11 @@ class AssistantApp:
         self.humor = self.config.getint('Assistant', 'humor', fallback=5) # Porcentaje de humor al n%. Significa que va a poner un audio "gracioso" el n% de las veces en los pedidos que tengan humor configurado
         self.informal_chat = self.config.getint('Assistant', 'informal_chat', fallback=0)
         self.user = os.environ.get('USERNAME') or os.environ.get('USER') # El usuario de tu PC actual
+        self.api_key = api_key
         self.continue_ = True
         self.attempts = 0
         self.configaudio()
-        self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+        self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk, self.api_key)
         self.print_('Encendido')
         self.start()
         self.print_('Detenido')
@@ -87,7 +91,7 @@ class AssistantApp:
 
     def recognise_speech_and_pass_it_to_text(self, connection_failures = 0):
         self.attempts += 1
-        if (not self.informal_chat) and (self.attempts % 100 == 0): self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk) # Reinicia la IA cada 100 escuchas, siempre y cuando estemos en un chat formal
+        if (not self.informal_chat) and (self.attempts % 100 == 0): self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk, self.api_key) # Reinicia la IA cada 100 escuchas, siempre y cuando estemos en un chat formal
         try:
             with sr.Microphone() as source: # Abrimos el micrófono como fuente de entrada de audio
                 listener = sr.Recognizer()
@@ -134,7 +138,7 @@ class AssistantApp:
             response_ia = utils.process_with_natural_language(rec, self.chat)
 
             if response_ia["action"] == "none": # Esto no debería suceder nunca. Si sucede, es porque se está inventando cosas
-                self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+                self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk, self.api_key)
                 return self.print_and_talk(self.MESSAGE_DONTKNOW)
 
             if self.order_without_ia(rec): None
@@ -350,14 +354,14 @@ class AssistantApp:
                 for i, order in enumerate(list_orders):
                     self.request(order)
             else:
-                self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+                self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk, self.api_key)
                 self.print_and_talk(self.MESSAGE_DONTKNOW)
 
         elif action == "response":
             self.print_and_talk(response_ia["text"])
 
         else: # No debería llegar nunca acá. Si eso sucede, es porque se está inventando cosas
-            self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+            self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk, self.api_key)
             self.print_and_talk(self.MESSAGE_DONTKNOW)
 
     #! Ciclo para hacer que el asistente inicie y no termine nunca a menos que se lo pidamos específicamente

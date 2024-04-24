@@ -16,6 +16,7 @@ class AssistantGui:
     def __init__(self):
         self.config = configparser.ConfigParser()
         self.config.read(self.CONFIG_FILE)
+        self.api_key = self.config.get(self.CONFIG_SECTION, 'api_key', fallback='')
         self.name = self.config.get(self.CONFIG_SECTION, 'name', fallback='okay')
         self.q = Queue()
         self.stop_event = None
@@ -76,13 +77,39 @@ class AssistantGui:
         self.root.mainloop()
 
     def start(self): # Inicia los hilos correspondientes al asistente virtual y al lector de mensajes
-        self.label_start.config(text='Iniciando. Espere...')
-        self.toggle_buttons('asistente_iniciado')
+        if not self.api_key: # Si no hay una api_key se pide al usuario que la proporcione
+            window_new_api_key = tk.Toplevel(self.root)
+            window_new_api_key.title("Definir api_key")
 
-        self.stop_event = threading.Event()
+            def change_api(input: str):
+                self.api_key = input.strip()
+                self.change_value('api_key', input.strip())
+                window_new_api_key.destroy()
 
-        threading.Thread(target=AssistantApp, args=(self.q, self.stop_event)).start() # En self.stop_event se almacena una señal que le dice a ambos hilos cuándo deben detenerse
-        threading.Thread(target=self.read_output).start()
+            label_error = tk.Label(window_new_api_key, text='Por favor, introduce tu API Key de Gemini antes de iniciar')
+            label_error.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
+
+            label_error2 = tk.Label(window_new_api_key, text='Es muy importante que sea una key válida, no tendrás un segundo intento a menos que reinstales este programa')
+            label_error2.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+
+            label_obtener_api = tk.Label(window_new_api_key, text='Ingresa a https://aistudio.google.com/app/apikey para obtenerla', cursor="hand2")
+            label_obtener_api.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+            label_obtener_api.bind("<Button-1>", lambda x: webbrowser.open_new_tab("https://aistudio.google.com/app/apikey"))
+
+            input_api_key = tk.Entry(window_new_api_key)
+            input_api_key.grid(row=3, column=0, columnspan=2, padx=10, pady=5)
+
+            save_button = tk.Button(window_new_api_key, text="Guardar", command=lambda: change_api(input_api_key.get()))
+            save_button.grid(row=4, column=0, columnspan=2, padx=10, pady=5)
+
+        else:
+            self.label_start.config(text='Iniciando. Espere...')
+            self.toggle_buttons('asistente_iniciado')
+
+            self.stop_event = threading.Event()
+
+            threading.Thread(target=AssistantApp, args=(self.q, self.stop_event, self.api_key)).start() # En self.stop_event se almacena una señal que le dice a ambos hilos cuándo deben detenerse
+            threading.Thread(target=self.read_output).start()
 
     def read_output(self): # Lee los mensajes enviados por el hilo correspondiente al asistente virtual y actualiza la interfaz gráfica según los valores
         while True: # Podría poner la condición "not self.stop_event.is_set()", pero como el cierre no es inmediato, cuando esa condición se cumple en realidad todavía puede haber algún último mensaje que falte enviar
@@ -146,7 +173,7 @@ class AssistantGui:
             self.new_humor_entry.delete(0, tk.END)
             self.set_msg_temp(f'Nivel de humor al {new_humor}%')
 
-    def set_msg_temp(self, msg): # Coloca un mensaje temporal
+    def set_msg_temp(self, msg: str): # Coloca un mensaje temporal
         self.label_msg_temp['text'] = msg
 
         def reset_value():
@@ -154,7 +181,7 @@ class AssistantGui:
 
         threading.Timer(5, lambda: reset_value()).start()
 
-    def toggle_buttons(self, estado): # Activa o desactiva los botones, dependiendo si el asistente está activo o no
+    def toggle_buttons(self, estado: str): # Activa o desactiva los botones, dependiendo si el asistente está activo o no
         if estado == 'asistente_iniciado':
             self.start_button.config(state=tk.DISABLED)
             self.stop_button.config(state=tk.NORMAL)

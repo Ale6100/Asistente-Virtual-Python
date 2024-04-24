@@ -21,6 +21,7 @@ safety_settings = [ # Para quitarle la censura a la IA
 ]
 
 config = configparser.ConfigParser()
+config.read('config.ini')
 
 name = config.get('Assistant', 'name', fallback='okay')
 
@@ -176,9 +177,9 @@ Este es tu único contexto, lo único que sabes de tí:
 5. Si detectas que te hacen pedidos que requieran que manipules la computadora, diles que desactiven el modo conversacional. Para ello, los usuarios deben presionar en el botón "desactivar modo conversacional"
 Comencemos:"""
 
-def train_ai(informal_chat, print_and_talk): #Entrena a la IA para que entienda qué debe responder en base a lo que le piden
+def train_ai(informal_chat: int, print_and_talk, api_key: str): # Entrena a la IA para que entienda qué debe responder en base a lo que le piden
     try:
-        genai.configure(api_key="") # Coloca aquí tu API Key
+        genai.configure(api_key=api_key) # Coloca en config.ini tu API Key
         genai.GenerationConfig(candidate_count=0)
 
         model = genai.GenerativeModel('gemini-pro')
@@ -192,4 +193,7 @@ def train_ai(informal_chat, print_and_talk): #Entrena a la IA para que entienda 
         return chat
     except Exception as e:
         print(e)
+        if 'API_KEY_INVALID' in str(e):
+            return print_and_talk('API Key inválida. Por favor reinstala el asistente y luego proporciona una key válida')
+
         return print_and_talk('Error inesperado. Inténtalo de nuevo más tarde. Si el problema persiste, intenta descargar la última versión')

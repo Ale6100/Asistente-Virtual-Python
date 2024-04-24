@@ -1,8 +1,6 @@
 # Asistente virtual con Python
 
-> 11/04/24: Deshabilitado temporalmente debido a problemas con la API Key de Gemini. No te preocupes! Si eres programador, hasta que resuelva este problema puedes colocar la tuya en [train_ai.py](./scripts/train_ai.py) si deseas probar al asistente
-
-Ahora impulsado con IA!
+> Ahora impulsado con IA!
 
 Bienvenido! este es mi primer asistente creado con Python. Hace un tiempo hice uno con JavaScript [aquí](https://github.com/Ale6100/Asistente-Virtual-JS.git) pero por las limitaciones de ese lenguaje no pude explotar su potencial.
 
@@ -26,14 +24,16 @@ _Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la últ
 
 2. Presiona el botón `Iniciar asistente`
 
-3. Notarás que mientras está iniciado hay un texto que alterna entre los valores:
+3. La primera ves que presiones este botón te solicitará una "API Key". Lo que te está pidiendo es una cadena de caracteres especial que te proporciona Google. Es única para cada uno, por lo que tendrás que generar la tuya [aquí](https://aistudio.google.com/app/apikey). Una vez que la tengas, ingrésala en el campo correspondiente en esa misma ventana. Luego de hacerlo, presiona el botón `Iniciar asistente` nuevamente.
+
+4. Notarás que mientras está iniciado hay un texto que alterna entre los valores:
     * Iniciando. Espere...
     * Espere...
     * Escuchando...
 
     Asegúrate de hablar siempre que esté presente el tercer valor, de lo contrario no podrá escucharte
 
-4. Hazle un pedido! Considera que:
+5. Hazle un pedido! Considera que:
 
     * Todas los pedidos deben iniciar con el nombre del asistente. Por defecto se llama "Okay" por simplicidad (puedes decir "Okey" también, ya que lo interpreta como "Okay"). Por ejemplo: `Okay, abrir Twitter`
 

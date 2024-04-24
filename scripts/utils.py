@@ -105,6 +105,6 @@ def process_with_natural_language_informal_talk(rec: str, chat: ChatSession):
     response_ia = chat.send_message(rec, safety_settings=safety_settings)
     return response_ia.text
 
-def restart_ia(informal_chat, print_and_talk): # Reinicia el historial de la IA y la vuelve a entrenar. Es más que nada para aquellos casos donde se detecta que no está funcionando como debería
+def restart_ia(informal_chat: int, print_and_talk, api_key: str): # Reinicia el historial de la IA y la vuelve a entrenar. Es más que nada para aquellos casos donde se detecta que no está funcionando como debería
     print("----- IA reiniciada -----")
-    return train_ai(informal_chat, print_and_talk)
+    return train_ai(informal_chat, print_and_talk, api_key)
