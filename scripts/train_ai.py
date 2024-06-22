@@ -1,24 +1,5 @@
-import google.generativeai as genai
 import configparser
-
-safety_settings = [ # Para quitarle la censura a la IA
-    {
-        "category": "HARM_CATEGORY_HARASSMENT",
-        "threshold": "BLOCK_NONE"
-    },
-    {
-        "category": "HARM_CATEGORY_HATE_SPEECH",
-        "threshold": "BLOCK_NONE"
-    },
-    {
-        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-        "threshold": "BLOCK_NONE"
-    },
-    {
-        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-        "threshold": "BLOCK_NONE"
-    }
-]
+from groq import Groq
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -156,16 +137,14 @@ c. Para que la lógica interna de este proyecto funcione de manera correcta, tu 
         "action": "order_not_in_list"
     }
 
-23. Hay una única excepción: Si te pregunta algo que no sea un pedido, deberás responder lo siguiente:
+23. Hay una única excepción: Si te dice algo que no sea un pedido, deberás responder lo siguiente:
     {
         "action": "response",
         "text": "[Respuesta con lenguaje natural, no le repreguntes nada]"
     }
-
-Comencemos:"""
+"""
 
 introduccion_informal_chat = f"""
-Este es tu único contexto, lo único que sabes de tí:
 1. Tú eres un asistente virtual simple llamado "{name}"
 
 2. Los usuarios te hablan desde un micrófono. Tú lo que haces es procesar el audio y convertirlo a texto para entenderlo. Luego les respondes con sonido que salen de sus parlantes
@@ -175,25 +154,39 @@ Este es tu único contexto, lo único que sabes de tí:
 4. Las respuestas que generes no deben ser largas
 
 5. Si detectas que te hacen pedidos que requieran que manipules la computadora, diles que desactiven el modo conversacional. Para ello, los usuarios deben presionar en el botón "desactivar modo conversacional"
-Comencemos:"""
+"""
 
-def train_ai(informal_chat: int, print_and_talk, api_key: str): # Entrena a la IA para que entienda qué debe responder en base a lo que le piden
+def train_ai(informal_chat: int, print_and_talk) -> list[dict[str, str]] :
     try:
-        genai.configure(api_key=api_key) # Coloca en config.ini tu API Key
-        genai.GenerationConfig(candidate_count=0)
-
-        model = genai.GenerativeModel('gemini-pro')
-        chat = model.start_chat(history=[])
+        client = Groq(
+            api_key = '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', # No oculto la key para que cualquiera sin conocimientos pueda usar el asistente. No te la robes, no seas sorete :)
+        )
 
         if informal_chat:
-            chat.send_message(introduccion_informal_chat, safety_settings=safety_settings)
+            intro = introduccion_informal_chat
         else:
-            chat.send_message(introduccion, safety_settings=safety_settings)
+            intro = introduccion
 
-        return chat
+        historial = [{
+            "role": "system",
+            "content": intro
+        }]
+
+        response = client.chat.completions.create(
+            model="llama3-70b-8192",
+            messages = historial,
+            temperature=0
+        ).choices[0].message.content
+
+        historial.append({
+            "role": "assistant",
+            "content": response
+        })
+
+        return historial
     except Exception as e:
         print(e)
-        if 'API_KEY_INVALID' in str(e):
-            return print_and_talk('API Key inválida. Por favor reinstala el asistente y luego proporciona una key válida')
+        if 'Invalid API Key' in str(e):
+            return print_and_talk('API Key inválida. Por favor descarga la última versión del asistente o comunícate con el programador')
 
         return print_and_talk('Error inesperado. Inténtalo de nuevo más tarde. Si el problema persiste, intenta descargar la última versión')

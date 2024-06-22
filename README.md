@@ -24,16 +24,14 @@ _Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la últ
 
 2. Presiona el botón `Iniciar asistente`
 
-3. La primera ves que presiones este botón te solicitará una "API Key". Lo que te está pidiendo es una cadena de caracteres especial que te proporciona Google. Es única para cada uno, por lo que tendrás que generar la tuya [aquí](https://aistudio.google.com/app/apikey). Una vez que la tengas, ingrésala en el campo correspondiente en esa misma ventana. Luego de hacerlo, presiona el botón `Iniciar asistente` nuevamente.
-
-4. Notarás que mientras está iniciado hay un texto que alterna entre los valores:
+3. Notarás que mientras está iniciado hay un texto que alterna entre los valores:
     * Iniciando. Espere...
     * Espere...
     * Escuchando...
 
     Asegúrate de hablar siempre que esté presente el tercer valor, de lo contrario no podrá escucharte
 
-5. Hazle un pedido! Considera que:
+4. Hazle un pedido! Considera que:
 
     * Todas los pedidos deben iniciar con el nombre del asistente. Por defecto se llama "Okay" por simplicidad (puedes decir "Okey" también, ya que lo interpreta como "Okay"). Por ejemplo: `Okay, abrir Twitter`
 
@@ -89,7 +87,7 @@ También es posible hacerle varios pedidos al mismo tiempo!
 
 4. Si suspendés la computadora y la volvés a encender, el asistente dejará de funcionar como máximo 60 segudos, luego volverá a estar disponible
 
-5. Dado que utilizo Gemini Pro (una IA no muy avanzada), es natural que de vez en cuando no funcione como debería, incluso a veces puede inventarse datos. Sus memorias se reinician cada 100 escuchas para minimizar el margen de error, y la mayoría de las veces que se detectan respuestas inesperadas.
+5. Dado que utilizo Llama 3 (una IA no muy avanzada), es natural que de vez en cuando no funcione como debería, incluso a veces puede inventarse datos. Sus memorias se reinician cada 100 escuchas para minimizar el margen de error, y la mayoría de las veces que se detectan respuestas inesperadas.
 
 ## Guía para programadores 👨‍💻
 

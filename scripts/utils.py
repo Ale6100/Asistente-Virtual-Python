@@ -7,10 +7,10 @@ import numpy as np
 from pygame import mixer
 import pyautogui
 
-from google.generativeai import ChatSession
+from groq import Groq
 
 from scripts.addresses import dir_mixer
-from scripts.train_ai import safety_settings, train_ai
+from scripts.train_ai import train_ai
 
 def key_press(rec: str, print_and_talk):
     rec_array = rec.split()
@@ -94,17 +94,49 @@ def change_value(config, clave: str, valor: int | float): # Modifica el valor de
         config.write(f)
     return valor
 
-def process_with_natural_language(rec: str, chat: ChatSession):
-    response_ia = chat.send_message(rec, safety_settings=safety_settings)
+def process_with_natural_language(rec: str, historial: list[dict[str, str]]):
+    client = Groq(
+        api_key = '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',
+    )
+
+    historial.append({"role": "user", "content": rec})
+
+    response = client.chat.completions.create(
+        model="llama3-70b-8192",
+        messages = historial,
+        temperature=0
+    ).choices[0].message.content
+
+    historial.append({
+        "role": "assistant",
+        "content": response
+    })
+
     try: # En caso de que la respuesta no sea un json, tal como lo especifiqué
-        return json.loads(response_ia.text)
+        return json.loads(response)
     except json.JSONDecodeError:
         return json.loads('{ "action": "none" }')
 
-def process_with_natural_language_informal_talk(rec: str, chat: ChatSession):
-    response_ia = chat.send_message(rec, safety_settings=safety_settings)
-    return response_ia.text
+def process_with_natural_language_informal_talk(rec: str, historial: list[dict[str, str]]):
+    client = Groq(
+        api_key = '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',
+    )
 
-def restart_ia(informal_chat: int, print_and_talk, api_key: str): # Reinicia el historial de la IA y la vuelve a entrenar. Es más que nada para aquellos casos donde se detecta que no está funcionando como debería
+    historial.append({"role": "user", "content": rec})
+
+    response = client.chat.completions.create(
+        model="llama3-70b-8192",
+        messages = historial,
+        temperature=0
+    ).choices[0].message.content
+
+    historial.append({
+        "role": "assistant",
+        "content": response
+    })
+
+    return response
+
+def restart_ia(informal_chat: int, print_and_talk): # Reinicia el historial de la IA y la vuelve a entrenar. Es más que nada para aquellos casos donde se detecta que ya no está respondiendo como debería
     print("----- IA reiniciada -----")
-    return train_ai(informal_chat, print_and_talk, api_key)
+    return train_ai(informal_chat, print_and_talk)
