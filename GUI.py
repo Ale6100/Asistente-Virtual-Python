@@ -21,6 +21,7 @@ class AssistantGui:
         self.stop_event = None
         self.window_open = True
         self.informal_chat = self.config.getint(self.CONFIG_SECTION, 'informal_chat', fallback=0)
+        self.modo_discreto = self.config.getint(self.CONFIG_SECTION, 'modo_discreto', fallback=0)
         self.create_gui()
 
     def create_gui(self):
@@ -68,10 +69,13 @@ class AssistantGui:
         self.save_humor_button.grid(row= 6, column = 4, columnspan = 2)
 
         self.change_informal_mode_button = tk.Button(self.root, text="Desactivar modo conversacional" if self.informal_chat else "Activar modo conversacional", command=self.change_informal_mode, bg='orange' if self.informal_chat else 'white')
-        self.change_informal_mode_button.grid(row= 7, column = 1, columnspan = 3)
+        self.change_informal_mode_button.grid(row= 7, column = 0, columnspan = 3)
 
         self.help_button = tk.Button(self.root, text="Ayuda", command=lambda: webbrowser.open(addresses.addresses["sourcecode"]["url"]))
         self.help_button.grid(row= 7, column = 4, columnspan = 3)
+
+        self.change_discreet_mode_button = tk.Button(self.root, text="Modo discreto ON" if self.modo_discreto else "Modo discreto OFF", command=lambda: self.change_discreet_mode(not self.modo_discreto))
+        self.change_discreet_mode_button.grid(row= 8, column = 1, columnspan = 4)
 
         self.root.mainloop()
 
@@ -81,7 +85,7 @@ class AssistantGui:
 
         self.stop_event = threading.Event()
 
-        threading.Thread(target=AssistantApp, args=(self.q, self.stop_event)).start() # En self.stop_event se almacena una señal que le dice a ambos hilos cuándo deben detenerse
+        threading.Thread(target=AssistantApp, args=(self.q, self.stop_event, self.modo_discreto)).start() # En self.stop_event se almacena una señal que le dice a ambos hilos cuándo deben detenerse
         threading.Thread(target=self.read_output).start()
 
     def read_output(self): # Lee los mensajes enviados por el hilo correspondiente al asistente virtual y actualiza la interfaz gráfica según los valores
@@ -161,12 +165,14 @@ class AssistantGui:
             self.save_name_button.config(state=tk.DISABLED)
             self.save_humor_button.config(state=tk.DISABLED)
             self.change_informal_mode_button.config(state=tk.DISABLED)
+            self.change_discreet_mode_button.config(state=tk.DISABLED)
         elif estado == 'asistente_detenido':
             self.start_button.config(state=tk.NORMAL)
             self.stop_button.config(state=tk.DISABLED)
             self.save_name_button.config(state=tk.NORMAL)
             self.save_humor_button.config(state=tk.NORMAL)
             self.change_informal_mode_button.config(state=tk.NORMAL)
+            self.change_discreet_mode_button.config(state=tk.NORMAL)
 
     def change_informal_mode(self):
         if self.informal_chat:
@@ -174,13 +180,28 @@ class AssistantGui:
             self.intro_label['text'] = f'Tu asistente se llama "{self.name}". Pídele algo'
             self.change_informal_mode_button['text'] = 'Activar modo conversacional'
             self.change_informal_mode_button.config(bg='white')
+            self.change_discreet_mode_button.config(state=tk.NORMAL)
         else:
             self.informal_chat = 1
             self.intro_label['text'] = f'Tu asistente se llama "{self.name}". Modo conversacional'
             self.change_informal_mode_button['text'] = 'Desactivar modo conversacional'
             self.change_informal_mode_button.config(bg='orange')
+            self.change_discreet_mode(False)
+            self.change_discreet_mode_button.config(state=tk.DISABLED)
 
         self.change_value('informal_chat', str(self.informal_chat))
+
+    def change_discreet_mode(self, state):
+        if state:
+            self.modo_discreto = 1
+            self.change_value('modo_discreto', str(self.modo_discreto))
+            self.change_discreet_mode_button['text'] = "Modo discreto ON"
+            self.set_msg_temp('Asistente muteado (modo discreto activado)')
+        else:
+            self.modo_discreto = 0
+            self.change_value('modo_discreto', str(self.modo_discreto))
+            self.change_discreet_mode_button['text'] = "Modo discreto OFF"
+            self.set_msg_temp('Asistente desmuteado (modo discreto desactivado)')
 
 if __name__ == "__main__":
     app = AssistantGui()

@@ -24,7 +24,7 @@ _Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la últ
 
 2. Presiona el botón `Iniciar asistente`
 
-3. Notarás que mientras está iniciado hay un texto que alterna entre los valores:
+3. Notarás que hay un texto que alterna entre los valores:
     * Iniciando. Espere...
     * Espere...
     * Escuchando...
@@ -37,7 +37,9 @@ _Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la últ
 
     * Con un botón en la interfaz puedes activar y desactivar el **Modo conversacional** (de manera predeterminada viene desactivado), donde el asistente no acatará pedidos, si no que simplemente conversará sobre los temas que desees. Cuando hablas con este modo también es necesario iniciar con el nombre del asistente. Este botón estará habilitado únicamente cuando el asistente esté detenido.
 
-    * Pedido encapsulado: Para mejorar el entendimiento, opcionalmente puedes decir su nombre por segunda vez en un mismo pedido. En este caso, el asistente interpretará que el pedido está en medio de la primera y la segunda vez que lo nombraste. Por ejemplo, si dices `bla bla bla Okay, abrir Twitter Okay bla bla bla`, el pedido será `abrir Twitter`
+    * Con otro botón puedes activar y desactivar el **Modo discreto** (de manera predeterminada viene desactivado), donde el asistente no te responderá con voz, estará silenciado. Este botón estará habilitado únicamente cuando el asistente esté iniciado.
+
+    * Pedido encapsulado: Para mejorar el entendimiento, opcionalmente puedes decir su nombre por segunda vez en un mismo pedido. En este caso, el asistente interpretará que el pedido está entre la primera y la segunda vez que lo nombraste. Por ejemplo, si dices `bla bla bla Okay, abrir Twitter Okay bla bla bla`, el pedido será `abrir Twitter`
 
     * Te responde "no te entendí" cuando entendió mal o hiciste un pedido que no está dentro de los disponibles
 
@@ -63,7 +65,7 @@ _Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la últ
 | `minimizar` | Minimiza el programa actual | Okay, minimizar | ---
 | `minimizar todo` | Minimiza todos los programas | Okay, minimizar todo | ---
 | `volumen`...`%` | Cambia el volumen de la computadora | Okay, volumen al 20% | Sólo coloca valores pares
-| `chiste` | Te dice un chiste relacionado a la informática (son malísimos) | Okay, decime un chiste | ---
+| `chiste` | Te dice un chiste único | Okay, decime un chiste | ---
 | `cómo te llamás` | Te dice su nombre | Okay, ¿Cómo te llamás? | ---
 | `captura de pantalla` | Hace una captura de pantalla | Okay, sacá una captura de pantalla | Guarda la captura en la carpeta `screenshots` ubicada donde está el asistente
 | `iniciá` / `detené` el `cronómetro` | Inicia o detiene un cronómetro | Okay, iniciá el cronómetro | ---

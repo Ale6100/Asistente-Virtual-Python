@@ -7,7 +7,6 @@ from datetime import datetime
 import random
 import webbrowser
 from multiprocessing import Queue
-from tkinter import messagebox
 from threading import Event
 
 import pyautogui
@@ -22,9 +21,10 @@ class AssistantApp:
     config = configparser.ConfigParser()
     MESSAGE_DONTKNOW = 'No te entendi'
 
-    def __init__(self, q: Queue, stop_event: Event):
-        self.stop_event = stop_event
+    def __init__(self, q: Queue, stop_event: Event, modo_discreto: int):
         self.q = q
+        self.stop_event = stop_event
+        self.modo_discreto = modo_discreto
         self.config.read('config.ini')
         self.name = self.config.get('Assistant', 'name', fallback='okay') # Le definimos un nombre al asistente, o simplemente una palabra clave que hace que se active
         self.chronometer = self.config.getfloat('Assistant', 'chronometer', fallback=0)
@@ -56,11 +56,11 @@ class AssistantApp:
 
     def print_and_talk(self, text: str): # El asistente imprime el texto pasado como argumento y lo reproduce
         self.print_(text)
-        self.engine.say(text)
+        if not self.modo_discreto: self.engine.say(text)
         if self.engine._inLoop: self.engine.endLoop() # Si el motor de voz está en un loop, lo detenemos para evitar errores
         self.engine.runAndWait()
 
-#! Configuramos el detenimiento del asistente
+    #! Configuramos el detenimiento del asistente
     def stop(self):
         if utils.check_humor(self.humor):
             utils.play_sound('Hasta_la_proxima', self.print_and_talk)
@@ -69,6 +69,7 @@ class AssistantApp:
             self.print_and_talk('Deteniendo')
         self.continue_ = False
 
+    #! Lógica y reconocimiento de los pedidos
     def run(self):
         rec = self.listen() # Retorna el pedido de un usuario
         if rec == self.RECOGNITION_ERROR: return None # No trata de ejecutar ningún pedido si hubo algún error
@@ -119,7 +120,6 @@ class AssistantApp:
             self.print_(f'Error:\n{e}')
         return self.RECOGNITION_ERROR
 
-    #! Lógica y reconocimiento de los pedidos
     def request(self, rec: str):
         print(f'rec: {rec}')
         try:
@@ -138,9 +138,9 @@ class AssistantApp:
 
             if response_ia["action"] == "none": # Esto no debería suceder nunca. Si sucede, es porque se está inventando cosas
                 self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
-                return self.print_and_talk(self.MESSAGE_DONTKNOW)
+                self.print_and_talk(self.MESSAGE_DONTKNOW)
 
-            if self.order_without_ia(rec): None
+            elif self.order_without_ia(rec): None
 
             elif response_ia["action"] != "order_not_in_list": # Si la IA detecta que el pedido está dentro de los pre-configurados para ella
                 self.order_with_ia(response_ia)
@@ -189,7 +189,7 @@ class AssistantApp:
         else: return False
         return True
 
-    def order_with_ia(self, response_ia):
+    def order_with_ia(self, response_ia: dict[str, str]):
         action = response_ia["action"]
 
         if action == "search":
@@ -350,7 +350,7 @@ class AssistantApp:
 
             if isinstance(orders_string, str) and (';' in orders_string):
                 list_orders = orders_string.split(';')
-                for i, order in enumerate(list_orders):
+                for _, order in enumerate(list_orders):
                     self.request(order)
             else:
                 self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)

@@ -13,7 +13,7 @@ a. Eres un asistente virtual que acata pedidos simples que involucran realizar a
 
 b. Los usuarios te hablan desde un micrófono. Tú lo que haces es procesar el audio y convertirlo a texto para entenderlo. Luego les respondes con sonido que salen de sus parlantes
 
-c. Para que la lógica interna de este proyecto funcione de manera correcta, tu responsabilidad como inteligencia artificial es responder de manera precisa y exclusiva a las indicaciones que se presentarán a continuación, siguiendo el siguiente formato:
+c. Para que la lógica interna de este proyecto funcione de manera correcta, tu responsabilidad como inteligencia artificial es responder de manera precisa y exclusiva a las indicaciones que se presentarán a continuación, siguiendo el siguiente formato json:
 
 1. Si el usuario quiere buscar algo en un buscador de un sitio web o en el buscador de windows:
     {
@@ -25,7 +25,7 @@ c. Para que la lógica interna de este proyecto funcione de manera correcta, tu 
 2. Si quiere ejecutar un pedido en X minutos:
     {
         "action": "program_order",
-        "order": "[pedido del usuario]",
+        "order": "[pedido del usuario, en lenguaje natural]",
         "minutes": "[X minutos, en formato numérico]"
     }
 
@@ -164,8 +164,10 @@ def train_ai(informal_chat: int, print_and_talk) -> list[dict[str, str]] :
 
         if informal_chat:
             intro = introduccion_informal_chat
+            format_ = { "type": "text" }
         else:
             intro = introduccion
+            format_ = { "type": "json_object" }
 
         historial = [{
             "role": "system",
@@ -175,7 +177,8 @@ def train_ai(informal_chat: int, print_and_talk) -> list[dict[str, str]] :
         response = client.chat.completions.create(
             model="llama3-70b-8192",
             messages = historial,
-            temperature=0
+            temperature=0,
+            response_format=format_
         ).choices[0].message.content
 
         historial.append({

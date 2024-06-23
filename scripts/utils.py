@@ -104,7 +104,8 @@ def process_with_natural_language(rec: str, historial: list[dict[str, str]]):
     response = client.chat.completions.create(
         model="llama3-70b-8192",
         messages = historial,
-        temperature=0
+        temperature=0,
+        response_format={ "type": "json_object" }
     ).choices[0].message.content
 
     historial.append({
