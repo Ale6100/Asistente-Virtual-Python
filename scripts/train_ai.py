@@ -159,7 +159,7 @@ introduccion_informal_chat = f"""
 def train_ai(informal_chat: int, print_and_talk) -> list[dict[str, str]] :
     try:
         client = Groq(
-            api_key = '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', # No oculto la key para que cualquiera sin conocimientos pueda usar el asistente. No te la robes, no seas sorete :)
+            api_key = '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', # No oculto la key para que cualquiera sin conocimientos pueda usar el asistente. No te la robes, no seas sorete :)
         )
 
         if informal_chat:
