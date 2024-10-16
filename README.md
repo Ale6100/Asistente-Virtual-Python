@@ -6,7 +6,7 @@ Bienvenido! este es mi primer asistente creado con Python. Hace un tiempo hice u
 
 Mi objetivo con este proyecto es lograr que el asistente sea lo suficientemente útil como para que desees utilizarlo a diaro, sabiendo que lo puedes dejar encendido en segundo plano para que esté listo en cualquier momento que lo necesites.
 
-`Nota 1`: Esto no es un Chat GPT con audio. La filosofía de este proyecto que inició en el 2020 es que el asistente pueda acatar pedidos de manera interactiva en tu computadora. Para más detalle, ve la tabla que está más abajo.
+`Nota 1`: Esto no es un Chat GPT con audio. La filosofía de este proyecto que inició en el 2020 es que el asistente pueda acatar pedidos de manera interactiva en tu computadora. Para más detalle ve la tabla que está más abajo.
 
 `Nota 2`: El asistente ha sido testeado en un entorno con Windows 11 de 64 bits, no puedo garantizar su correcto funcionamiento en otros casos.
 
@@ -22,16 +22,18 @@ _Recuerda volver aquí de vez en cuando para asegurarte de tener siempre la últ
 
 1. Abre el archivo ejecutable Asistente_virtual dentro de la carpeta con su mismo nombre
 
-2. Presiona el botón `Iniciar asistente`
+2. Si es la primera vez que lo abres tendrás que obtener tu Api Key gratuita de Groq e ingresarla en el campo correspondiente. Consíguela [aquí](https://console.groq.com/keys). Esta Api Key le proporciona al asistente virtual una inteligencia artificial. Anteriormente no era necesaria pero decidí implementarla para mejorar la experiencia del usuario.
 
-3. Notarás que hay un texto que alterna entre los valores:
+3. Presiona el botón `Iniciar asistente`
+
+4. Notarás que hay un texto que alterna entre los valores:
     * Iniciando. Espere...
     * Espere...
     * Escuchando...
 
     Asegúrate de hablar siempre que esté presente el tercer valor, de lo contrario no podrá escucharte
 
-4. Hazle un pedido! Considera que:
+5. Hazle un pedido! Considera que:
 
     * Todas los pedidos deben iniciar con el nombre del asistente. Por defecto se llama "Okay" por simplicidad (puedes decir "Okey" también, ya que lo interpreta como "Okay"). Por ejemplo: `Okay, abrir Twitter`
 
@@ -95,7 +97,7 @@ También es posible hacerle varios pedidos al mismo tiempo!
 
 ### Pre-requisitos 📋
 
-El código está hecho y testeado utilizando la versión 3.12.3 de Python y un Windows 11 de 64bits.
+El código está hecho y testeado utilizando la versión 3.12.5 de Python y un Windows 11 de 64bits.
 
 ### Descarga el código ⬇️
 
@@ -143,8 +145,6 @@ pyinstaller --noconsole --name "Asistente_virtual" --icon=complementos/icon.ico 
 ```
 
 para compilar el proyecto en la carpeta dist. Asegúrate de haber eliminado (o vaciado) la carpeta dist antes de compilar para evitar errores imprevistos. Luego abre el archivo Asistente_virtual.exe ubicado en `dist/Asistente_virtual` y utiliza tu versión modificada!
-
-`Nota:` personalmente, siempre que quiero compilar al asistente ejecuto el pedido "actualizar" del propio asistente, ya que además te elimina los archivos sobrantes. Este pedido no se encuentra en la tabla mostrada más arriba ya que no es para todos los usuarios.
 
 ### Despliegue 📦
 

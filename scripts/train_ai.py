@@ -156,10 +156,10 @@ introduccion_informal_chat = f"""
 5. Si detectas que te hacen pedidos que requieran que manipules la computadora, diles que desactiven el modo conversacional. Para ello, los usuarios deben presionar en el botón "desactivar modo conversacional"
 """
 
-def train_ai(informal_chat: int, print_and_talk) -> list[dict[str, str]] :
+def train_ai(informal_chat: int, print_and_talk, api_key: str, stop) -> list[dict[str, str]] :
     try:
         client = Groq(
-            api_key = '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', # No oculto la key para que cualquiera sin conocimientos pueda usar el asistente. No te la robes, no seas sorete :)
+            api_key = api_key
         )
 
         if informal_chat:
@@ -190,6 +190,6 @@ def train_ai(informal_chat: int, print_and_talk) -> list[dict[str, str]] :
     except Exception as e:
         print(e)
         if 'Invalid API Key' in str(e):
-            return print_and_talk('API Key inválida. Por favor descarga la última versión del asistente o comunícate con el programador')
-
+            print_and_talk('API Key inválida. Por favor introduce una nueva o descarga la última versión del asistente')
+            return stop()
         return print_and_talk('Error inesperado. Inténtalo de nuevo más tarde. Si el problema persiste, intenta descargar la última versión')

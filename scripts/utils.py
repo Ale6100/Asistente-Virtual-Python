@@ -12,6 +12,8 @@ from groq import Groq
 from scripts.addresses import dir_mixer
 from scripts.train_ai import train_ai
 
+from groq import Groq
+
 def key_press(rec: str, print_and_talk):
     rec_array = rec.split()
     index_tecla = rec_array.index('tecla')
@@ -94,9 +96,9 @@ def change_value(config, clave: str, valor: int | float): # Modifica el valor de
         config.write(f)
     return valor
 
-def process_with_natural_language(rec: str, historial: list[dict[str, str]]):
+def process_with_natural_language(rec: str, historial: list[dict[str, str]], api_key: str):
     client = Groq(
-        api_key = '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',
+        api_key = api_key,
     )
 
     historial.append({"role": "user", "content": rec})
@@ -118,9 +120,9 @@ def process_with_natural_language(rec: str, historial: list[dict[str, str]]):
     except json.JSONDecodeError:
         return json.loads('{ "action": "none" }')
 
-def process_with_natural_language_informal_talk(rec: str, historial: list[dict[str, str]]):
+def process_with_natural_language_informal_talk(rec: str, historial: list[dict[str, str]], api_key: str):
     client = Groq(
-        api_key = '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',
+        api_key = api_key,
     )
 
     historial.append({"role": "user", "content": rec})
@@ -138,6 +140,6 @@ def process_with_natural_language_informal_talk(rec: str, historial: list[dict[s
 
     return response
 
-def restart_ia(informal_chat: int, print_and_talk): # Reinicia el historial de la IA y la vuelve a entrenar. Es más que nada para aquellos casos donde se detecta que ya no está respondiendo como debería
+def restart_ia(informal_chat: int, print_and_talk, api_key: str, stop): # Reinicia el historial de la IA y la vuelve a entrenar. Es más que nada para aquellos casos donde se detecta que ya no está respondiendo como debería
     print("----- IA reiniciada -----")
-    return train_ai(informal_chat, print_and_talk)
+    return train_ai(informal_chat, print_and_talk, api_key, stop)

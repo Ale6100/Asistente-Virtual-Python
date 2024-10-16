@@ -1,6 +1,5 @@
 import configparser
 import os
-import shutil
 import threading
 import time
 from datetime import datetime
@@ -21,20 +20,21 @@ class AssistantApp:
     config = configparser.ConfigParser()
     MESSAGE_DONTKNOW = 'No te entendi'
 
-    def __init__(self, q: Queue, stop_event: Event, modo_discreto: int):
+    def __init__(self, q: Queue, stop_event: Event, modo_discreto: int, api_key: str):
         self.q = q
         self.stop_event = stop_event
         self.modo_discreto = modo_discreto
         self.config.read('config.ini')
         self.name = self.config.get('Assistant', 'name', fallback='okay') # Le definimos un nombre al asistente, o simplemente una palabra clave que hace que se active
-        self.chronometer = self.config.getfloat('Assistant', 'chronometer', fallback=0)
         self.humor = self.config.getint('Assistant', 'humor', fallback=5) # Porcentaje de humor al n%. Significa que va a poner un audio "gracioso" el n% de las veces en los pedidos que tengan humor configurado
+        self.chronometer = self.config.getfloat('Assistant', 'chronometer', fallback=0)
         self.informal_chat = self.config.getint('Assistant', 'informal_chat', fallback=0)
+        self.api_key = api_key
         self.user = os.environ.get('USERNAME') or os.environ.get('USER') # El usuario de tu PC actual
         self.continue_ = True
         self.attempts = 0
         self.configaudio()
-        self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+        self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk, self.api_key, self.stop)
         self.print_('Encendido')
         self.start()
         self.print_('Detenido')
@@ -91,7 +91,7 @@ class AssistantApp:
 
     def recognise_speech_and_pass_it_to_text(self, connection_failures = 0):
         self.attempts += 1
-        if (not self.informal_chat) and (self.attempts % 100 == 0): self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk) # Reinicia la IA cada 100 escuchas, siempre y cuando estemos en un chat formal
+        if (not self.informal_chat) and (self.attempts % 100 == 0): self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk, self.api_key) # Reinicia la IA cada 100 escuchas, siempre y cuando estemos en un chat formal
         try:
             with sr.Microphone() as source: # Abrimos el micrófono como fuente de entrada de audio
                 listener = sr.Recognizer()
@@ -132,12 +132,12 @@ class AssistantApp:
             if any(word == rec.split(' ')[-1] for word in ['basta', 'apaga', 'apagues']): return self.stop() # Apaga al asistente. La palabra "basta" debe decirse al final (o alguna variante similar)
 
             if self.informal_chat: # Si estamos en un chat informal, ignoramos los pedidos
-                return self.print_and_talk(utils.process_with_natural_language_informal_talk(rec, self.chat))
+                return self.print_and_talk(utils.process_with_natural_language_informal_talk(rec, self.chat, self.api_key))
 
-            response_ia = utils.process_with_natural_language(rec, self.chat)
+            response_ia = utils.process_with_natural_language(rec, self.chat, self.api_key)
 
             if response_ia["action"] == "none": # Esto no debería suceder nunca. Si sucede, es porque se está inventando cosas
-                self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+                self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk, self.api_key)
                 self.print_and_talk(self.MESSAGE_DONTKNOW)
 
             elif self.order_without_ia(rec): None
@@ -168,24 +168,6 @@ class AssistantApp:
             utils.key_press(rec, self.print_and_talk)
 
         elif 'alarma' == rec.split()[-1]: utils.play_sound(rec, self.print_and_talk) # Si "alarma" se dice al final
-
-        elif any(word in rec for word in ['actualizar asistente', 'actualizarte', 'actualizate', 'actualices']) and self.user == 'aleja': # Para que el ".exe" del asistente se cree o actualice
-            # Si alguien más aparte de mí accede a este if no hay problema, pero con esto trato de reducir esa posibilidad
-            self.humor = utils.change_value(self.config, 'humor', 5)
-            self.print_and_talk('Actualizando asistente')
-            asistente_virtual = 'Asistente_virtual'
-            current_dir = os.getcwd()
-            if os.path.exists(f'{current_dir}/dist'): shutil.rmtree(f'{current_dir}/dist') # Elimina la carpeta dist
-            os.chdir(current_dir) # Línea necesaria para que funcione sin importar si ejecuto esto desde acá o desde GUI.py
-            os.system(f'\
-            pyinstaller --noconsole --name "{asistente_virtual}" --icon=complementos/icon.ico --contents-directory . \
-            --add-data "complementos;complementos" \
-            --add-data "scripts;scripts" \
-            --add-data "config.ini;." \
-            GUI.py') # Esta línea crea el nuevo archivo ejecutable
-            os.remove(f'{current_dir}/{asistente_virtual}.spec')
-            shutil.rmtree(f'{current_dir}/build') # Elimina la carpeta build
-            self.stop()
         else: return False
         return True
 
@@ -353,14 +335,14 @@ class AssistantApp:
                 for _, order in enumerate(list_orders):
                     self.request(order)
             else:
-                self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+                self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk, self.api_key)
                 self.print_and_talk(self.MESSAGE_DONTKNOW)
 
         elif action == "response":
             self.print_and_talk(response_ia["text"])
 
         else: # No debería llegar nunca acá. Si eso sucede, es porque se está inventando cosas
-            self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk)
+            self.chat = utils.restart_ia(self.informal_chat, self.print_and_talk, self.api_key)
             self.print_and_talk(self.MESSAGE_DONTKNOW)
 
     #! Ciclo para hacer que el asistente inicie y no termine nunca a menos que se lo pidamos específicamente

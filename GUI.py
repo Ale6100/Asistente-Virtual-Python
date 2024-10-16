@@ -22,6 +22,7 @@ class AssistantGui:
         self.window_open = True
         self.informal_chat = self.config.getint(self.CONFIG_SECTION, 'informal_chat', fallback=0)
         self.modo_discreto = self.config.getint(self.CONFIG_SECTION, 'modo_discreto', fallback=0)
+        self.api_key = self.config.get(self.CONFIG_SECTION, 'api_key')
         self.create_gui()
 
     def create_gui(self):
@@ -77,15 +78,36 @@ class AssistantGui:
         self.change_discreet_mode_button = tk.Button(self.root, text="Modo discreto ON" if self.modo_discreto else "Modo discreto OFF", command=lambda: self.change_discreet_mode(not self.modo_discreto))
         self.change_discreet_mode_button.grid(row= 8, column = 1, columnspan = 4)
 
+        hay_api = self.api_key != "0"
+
+        self.lablel_api_key_state = tk.Label(self.root, text=f'API key {"guardada" if hay_api else "NO GUARDADA"}', foreground='green' if hay_api else 'red')
+        self.lablel_api_key_state.grid(row= 9, column = 0, columnspan = 6)
+
+        self.label_api_key = tk.Label(self.root, text=f'{"Cambiar" if hay_api else "Guardar"} API key:')
+        self.label_api_key.grid(row= 10, column = 0, columnspan = 2)
+
+        self.api_key_entry = tk.Entry(self.root)
+        self.api_key_entry.grid(row= 10, column = 2, columnspan = 2)
+
+        self.save_api_key_button = tk.Button(self.root, text=f"{'Cambiar' if hay_api else "Guardar"}", command=self.save_api_key)
+        self.save_api_key_button.grid(row= 10, column = 4, columnspan = 2)
+
+        self.btn_conseguir_api_key = tk.Button(self.root, text="Conseguir API key", command=lambda: webbrowser.open("https://console.groq.com/keys"))
+        self.btn_conseguir_api_key.grid(row= 11, column = 0, columnspan = 6)
+
         self.root.mainloop()
 
     def start(self): # Inicia los hilos correspondientes al asistente virtual y al lector de mensajes
+        if self.api_key == "0":
+            self.set_msg_temp('No se puede iniciar sin API key!')
+            return
+
         self.label_start.config(text='Iniciando. Espere...')
         self.toggle_buttons('asistente_iniciado')
 
         self.stop_event = threading.Event()
 
-        threading.Thread(target=AssistantApp, args=(self.q, self.stop_event, self.modo_discreto)).start() # En self.stop_event se almacena una señal que le dice a ambos hilos cuándo deben detenerse
+        threading.Thread(target=AssistantApp, args=(self.q, self.stop_event, self.modo_discreto, self.api_key)).start() # En self.stop_event se almacena una señal que le dice a ambos hilos cuándo deben detenerse
         threading.Thread(target=self.read_output).start()
 
     def read_output(self): # Lee los mensajes enviados por el hilo correspondiente al asistente virtual y actualiza la interfaz gráfica según los valores
@@ -166,6 +188,7 @@ class AssistantGui:
             self.save_humor_button.config(state=tk.DISABLED)
             self.change_informal_mode_button.config(state=tk.DISABLED)
             self.change_discreet_mode_button.config(state=tk.DISABLED)
+            self.save_api_key_button.config(state=tk.DISABLED)
         elif estado == 'asistente_detenido':
             self.start_button.config(state=tk.NORMAL)
             self.stop_button.config(state=tk.DISABLED)
@@ -173,6 +196,7 @@ class AssistantGui:
             self.save_humor_button.config(state=tk.NORMAL)
             self.change_informal_mode_button.config(state=tk.NORMAL)
             self.change_discreet_mode_button.config(state=tk.NORMAL)
+            self.save_api_key_button.config(state=tk.NORMAL)
 
     def change_informal_mode(self):
         if self.informal_chat:
@@ -186,22 +210,32 @@ class AssistantGui:
             self.intro_label['text'] = f'Tu asistente se llama "{self.name}". Modo conversacional'
             self.change_informal_mode_button['text'] = 'Desactivar modo conversacional'
             self.change_informal_mode_button.config(bg='orange')
-            self.change_discreet_mode(False)
+            self.change_discreet_mode(False, False)
             self.change_discreet_mode_button.config(state=tk.DISABLED)
 
         self.change_value('informal_chat', str(self.informal_chat))
 
-    def change_discreet_mode(self, state):
+    def change_discreet_mode(self, state, msg=True):
         if state:
             self.modo_discreto = 1
             self.change_value('modo_discreto', str(self.modo_discreto))
             self.change_discreet_mode_button['text'] = "Modo discreto ON"
-            self.set_msg_temp('Asistente muteado (modo discreto activado)')
+            if msg: self.set_msg_temp('Asistente muteado (modo discreto activado)')
         else:
             self.modo_discreto = 0
             self.change_value('modo_discreto', str(self.modo_discreto))
             self.change_discreet_mode_button['text'] = "Modo discreto OFF"
-            self.set_msg_temp('Asistente desmuteado (modo discreto desactivado)')
+            if msg: self.set_msg_temp('Asistente desmuteado (modo discreto desactivado)')
+
+    def save_api_key(self):
+        api_key = self.api_key_entry.get().strip()
+        if api_key != '':
+            self.api_key_entry.delete(0, tk.END)
+            self.change_value('api_key', api_key)
+            self.api_key = api_key
+            self.lablel_api_key_state['text'] = 'API key guardada'
+            self.lablel_api_key_state['foreground'] = 'green'
+            self.set_msg_temp('API key guardada')
 
 if __name__ == "__main__":
     app = AssistantGui()
